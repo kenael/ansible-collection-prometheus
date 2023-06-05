@@ -1,0 +1,15 @@
+{% if prometheus_storage is defined and
+      prometheus_storage | count > 0 %}
+
+storage:
+  {{ prometheus_storage | to_nice_yaml(indent=2,sort_keys=False) | indent(2, False) }}
+{% endif %}
+{#
+# Storage related settings that are runtime reloadable.
+storage:
+  # https://prometheus.io/docs/prometheus/latest/configuration/configuration/#tsdb
+  [ tsdb: <tsdb> ]
+  # https://prometheus.io/docs/prometheus/latest/configuration/configuration/#exemplars
+  # -> Note that exemplar storage is still considered experimental and must be enabled via --enable-feature=exemplar-storage.
+  [ exemplars: <exemplars> ]
+#}

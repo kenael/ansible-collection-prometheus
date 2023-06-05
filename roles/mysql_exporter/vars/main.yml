@@ -1,0 +1,59 @@
+---
+
+mysql_exporter_main_version: "{{ mysql_exporter_version[0:3] }}"
+
+mysql_exporter_install_path: /usr/local/bin/mysql_exporter/{{ mysql_exporter_version }}
+
+mysql_exporter_delegate_to: localhost
+
+mysql_exporter_local_tmp_directory: "{{
+  lookup('env', 'CUSTOM_LOCAL_TMP_DIRECTORY') |
+  default(lookup('env', 'HOME') ~ '/.cache/ansible/mysql_exporter', true) }}/{{ mysql_exporter_version }}"
+
+mysql_exporter_config_dir: /etc/mysql_exporter
+
+mysql_exporter_packages: []
+
+mysql_exporter_requirements:
+  - iproute2
+
+mysql_exporter_defaults_directory: /etc/default
+
+mysql_exporter_defaults_credentials:
+  client:
+    hostname: ""
+    port: ""
+    socket: ""
+    username: ""
+    password: ""
+
+mysql_exporter_defaults_service:
+  log:
+    level: info
+    format: ""
+  web:
+    listen_address: "127.0.0.1:9104"
+    telemetry_path: /metrics
+  exporter:
+    lock_wait_timeout: ""                  # 2
+    log_slow_filter: ""                    # true | false
+  timeout_offset: ""                       # 0.25
+  config:
+    my_cnf: "{{ mysql_exporter_config_dir }}/mysql_exporter.cnf"
+  raw_flags: {}
+
+mysql_exporter_defaults_collectors: []
+
+# ------------------------------------------------------------------------
+
+go_arch_map:
+  x86_64: 'amd64'
+  aarch64: 'arm64'
+  armv7l: 'armv7'
+  armv6l: 'armv6'
+
+go_arch: "{{ go_arch_map[ansible_architecture] | default(ansible_architecture) }}"
+
+systemd_lib_directory: /lib/systemd/system
+
+...

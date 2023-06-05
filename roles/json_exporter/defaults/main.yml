@@ -1,0 +1,17 @@
+---
+
+json_exporter_version: '0.5.0'
+
+json_exporter_release: {}
+
+json_exporter_system_group: json-exporter
+json_exporter_system_user: json-exporter
+json_exporter_config_dir: /etc/json_exporter
+
+json_exporter_direct_download: false
+
+json_exporter_service: {}
+
+json_exporter_config: []
+
+...

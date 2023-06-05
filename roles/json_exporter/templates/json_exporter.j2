@@ -1,0 +1,36 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
+# {{ ansible_managed }}
+
+# GOMAXPROCS={{ ansible_processor_vcpus | default(ansible_processor_count) }}
+
+OPTIONS="
+{% if json_exporter_service is defined %}
+  {# log configuration #}
+  --log.level={{ json_exporter_service.log.level | default('info') }} \
+  {% if json_exporter_service.log.format is defined and
+        json_exporter_service.log.format in ["logfmt", "json"] %}
+  --log.format={{json_exporter_service.log.format }} \
+  {% endif %}
+  {% if json_exporter_service.web.listen_address is defined and
+        json_exporter_service.web.listen_address | string | length > 0 %}
+  --web.listen-address={{ json_exporter_service.web.listen_address }} \
+  {% endif %}
+{% endif %}
+  --config.file={{ json_exporter_service.config.file }}
+"
+
+{#
+  json_exporter --help
+  usage: json_exporter [<flags>]
+
+  Flags:
+    -h, --help                    Show context-sensitive help (also try --help-long and --help-man).
+        --config.file=config.yml  JSON exporter configuration file.
+        --web.listen-address=":7979"
+                                  The address to listen on for HTTP requests.
+        --config.check            If true validate the config file and then exit.
+        --web.config=""           [EXPERIMENTAL] Path to config yaml file that can enable TLS or authentication.
+        --log.level=info          Only log messages with the given severity or above. One of: [debug, info, warn, error]
+        --log.format=logfmt       Output format of log messages. One of: [logfmt, json]
+        --version                 Show application version.
+#}

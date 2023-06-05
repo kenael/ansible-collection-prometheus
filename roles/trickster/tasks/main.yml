@@ -1,0 +1,37 @@
+---
+
+- name: prepare
+  ansible.builtin.import_tasks: prepare.yml
+  tags:
+    - trickster_install
+    - trickster_configure
+    - trickster_run
+
+- name: download
+  ansible.builtin.import_tasks: download.yml
+  become: true
+  when:
+    - not stat_trickster_binary.stat.exists
+  tags:
+    - trickster_install
+
+- name: install
+  ansible.builtin.import_tasks: install.yml
+  become: true
+  tags:
+    - trickster_install
+
+- name: configure
+  ansible.builtin.import_tasks: configure.yml
+  become: true
+  tags:
+    - trickster_configure
+
+- name: service
+  ansible.builtin.import_tasks: service.yml
+  become: true
+  tags:
+    - trickster_run
+    - trickster_configure
+
+...

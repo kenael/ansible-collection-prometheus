@@ -1,0 +1,91 @@
+---
+
+- name: detect binary file for alertmanager
+  become: false
+  delegate_to: "{{ alertmanager_delegate_to }}"
+  run_once: "{{ 'false' if alertmanager_direct_download else 'true' }}"
+  ansible.builtin.stat:
+    path: "{{ alertmanager_local_tmp_directory }}/alertmanager-{{ alertmanager_version }}.linux-{{ go_arch }}/alertmanager"
+  register: stat_file_binary
+
+- name: propagate files
+  when:
+    - stat_file_binary.stat.exists
+  block:
+    - name: propagate alertmanager binaries
+      ansible.builtin.copy:
+        src: "{{ alertmanager_local_tmp_directory }}/alertmanager-{{ alertmanager_version }}.linux-{{ go_arch }}/{{ item }}"
+        dest: "{{ alertmanager_install_path }}/{{ item }}"
+        mode: 0755
+        owner: "{{ alertmanager_system_user }}"
+        group: "{{ alertmanager_system_group }}"
+        remote_src: "{{ 'true' if alertmanager_direct_download else 'false' }}"
+      loop:
+        - alertmanager
+        - amtool
+
+- name: make files executable
+  ansible.builtin.file:
+    path: "{{ alertmanager_install_path }}/{{ item }}"
+    mode: 0755
+    owner: "{{ alertmanager_system_user }}"
+    group: "{{ alertmanager_system_group }}"
+  loop:
+    - alertmanager
+    - amtool
+
+- name: create custom fact file
+  bodsch.core.facts:
+    name: alertmanager
+    facts:
+      version: "{{ alertmanager_version }}"
+
+- name: create link to binary
+  ansible.builtin.file:
+    src: "{{ alertmanager_install_path }}/{{ item }}"
+    dest: "/usr/bin/{{ item }}"
+    state: link
+    force: true
+    follow: false
+  loop:
+    - alertmanager
+    - amtool
+  notify:
+    - restart alertmanager
+
+- name: create alertmanager data directory
+  ansible.builtin.file:
+    path: "{{ alertmanager_data_dir }}"
+    state: directory
+    owner: "{{ alertmanager_system_user }}"
+    group: "{{ alertmanager_system_group }}"
+    mode: 0755
+
+- name: create alertmanager configuration directory
+  ansible.builtin.file:
+    path: "{{ alertmanager_config_dir }}"
+    state: directory
+    owner: root
+    group: "{{ alertmanager_system_group }}"
+    mode: 0770
+
+- name: create amtool configuration directory
+  ansible.builtin.file:
+    path: "{{ alertmanager_amtool.config_dir }}"
+    state: directory
+    owner: root
+    group: "{{ alertmanager_system_group }}"
+    mode: 0770
+
+- name: create alertmanager templates directory
+  ansible.builtin.file:
+    path: "{{ item | dirname }}"
+    state: directory
+    owner: root
+    group: "{{ alertmanager_system_group }}"
+    mode: 0770
+  loop: "{{ alertmanager_templates }}"
+  loop_control:
+    label: "{{ item | dirname }}"
+
+...

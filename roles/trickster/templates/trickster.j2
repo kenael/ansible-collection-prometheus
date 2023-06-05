@@ -1,0 +1,55 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
+# {{ ansible_managed }}
+
+{% set _loglevel = "info" %}
+{% if trickster_service_config.log.level is defined and
+      trickster_service_config.log.level in ["debug", "info", "warn", "error"] %}
+  {% set _loglevel = trickster_service_config.log.level %}
+{% endif %}
+
+OPTIONS="
+  --config {{ trickster_service_config.config_file }} \
+  --log-level {{ _loglevel }} \
+  {% if trickster_service_config.origin.url is defined and
+        trickster_service_config.origin.url | string | length > 0 %}
+  --origin-url {{ trickster_service_config.origin.url }} \
+  {% endif %}
+  {% if trickster_service_config.origin.type is defined and
+        trickster_service_config.origin.type in ["prometheus", "influxdb"] %}
+  --origin-type {{ trickster_service_config.origin.type }} \
+  {% endif %}
+  {% if trickster_service_config.metrics.port is defined and
+        trickster_service_config.metrics.port | string | length > 0 %}
+  --metrics-port {{ trickster_service_config.metrics.port }} \
+  {% endif %}
+  {% if trickster_service_config.proxy.port is defined and
+        trickster_service_config.proxy.port | string | length > 0 %}
+  --proxy-port {{ trickster_service_config.metrics.port }} \
+  {% endif %}
+  {% if trickster_main.instance_id is defined and
+        trickster_main.instance_id | string | length > 0 %}
+  --instance-id {{ trickster_main.instance_id }} \
+  {% endif %}
+"
+
+{#
+# Usage of trickster:
+#   -config string
+#         Path to Trickster Config File
+#   -instance-id int
+#         Instance ID is for running multiple Trickster processes from the same config while logging to their own files
+#   -log-level string
+#         Level of Logging to use (debug, info, warn, error)
+#   -metrics-port int
+#         Port that the /metrics endpoint will listen on
+#   -origin-type string
+#         Type of origin (prometheus, influxdb)
+#   -origin-url string
+#         URL to the Origin. Enter it like you would in grafana, e.g., http://prometheus:9090
+#   -proxy-port int
+#         Port that the primary Proxy server will listen on
+#   -validate-config
+#         Validates a Trickster config and exits without running the server
+#   -version
+#         Prints the Trickster version
+#}

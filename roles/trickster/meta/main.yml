@@ -1,0 +1,32 @@
+---
+
+galaxy_info:
+  role_name: trickster
+  namespace: bodsch
+
+  author: Bodo Schulz
+  description: ansible role for install and configure Trickster
+  license: Apache 2.0
+
+  min_ansible_version: "2.10"
+  platforms:
+    - name: ArchLinux
+    - name: Debian
+      versions:
+        # 10
+        - buster
+        - bullseye
+    - name: Ubuntu
+      versions:
+        # 18.04
+        - bionic
+        # 20.04
+        - focal
+
+  galaxy_tags:
+    - monitoring
+    - prometheus
+    - trickster
+    - cache
+
+dependencies: []

@@ -1,0 +1,5 @@
+---
+
+trickster_requirements:
+  - curl
+  - iproute

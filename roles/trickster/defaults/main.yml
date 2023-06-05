@@ -1,0 +1,41 @@
+---
+
+trickster_release_download_url: https://github.com/tricksterproxy/trickster/releases
+
+trickster_version: '2.0.0-beta2'
+
+trickster_direct_download: false
+
+trickster_system_user: trickster
+trickster_system_group: trickster
+
+trickster_bin: /bin/trickster
+trickster_config_dir: /etc/trickster
+
+trickster_service_state: started
+
+trickster_service_config: {}
+
+trickster_main: {}
+
+trickster_frontend: {}
+
+trickster_caches: {}
+
+trickster_negative_caches: {}
+
+trickster_backends: {}
+
+trickster_rules: {}
+
+trickster_request_rewriters: {}
+
+trickster_tracing: {}
+
+trickster_metrics: {}
+
+trickster_reloading: {}
+
+trickster_logging: {}
+
+...

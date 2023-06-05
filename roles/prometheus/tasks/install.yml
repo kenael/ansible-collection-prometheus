@@ -1,0 +1,102 @@
+---
+
+- name: detect binary file for prometheus
+  become: false
+  delegate_to: "{{ prometheus_delegate_to }}"
+  run_once: "{{ 'false' if prometheus_direct_download else 'true' }}"
+  ansible.builtin.stat:
+    path: "{{ prometheus_local_tmp_directory }}/prometheus-{{ prometheus_version }}.linux-amd64/prometheus"
+  register: stat_file_binary
+
+- name: propagate files
+  when:
+    - stat_file_binary.stat.exists
+  block:
+    - name: propagate prometheus binaries
+      ansible.builtin.copy:
+        src: "{{ prometheus_local_tmp_directory }}/prometheus-{{ prometheus_version }}.linux-amd64/{{ item }}"
+        dest: "{{ prometheus_install_path }}/{{ item }}"
+        mode: 0755
+        owner: "{{ prometheus_system_user }}"
+        group: "{{ prometheus_system_group }}"
+        remote_src: "{{ 'true' if prometheus_direct_download else 'false' }}"
+      loop:
+        - prometheus
+        - promtool
+
+    - name: propagate official console templates
+      ansible.builtin.copy:
+        src: "{{ prometheus_local_tmp_directory }}/prometheus-{{ prometheus_version }}.linux-amd64/{{ item }}/"
+        dest: "{{ prometheus_config_dir }}/{{ item }}/"
+        mode: 0644
+        owner: "{{ prometheus_system_user }}"
+        group: "{{ prometheus_system_group }}"
+        remote_src: "{{ 'true' if prometheus_direct_download else 'false' }}"
+      loop:
+        - console_libraries
+        - consoles
+      notify:
+        - reload prometheus
+
+- name: make files executable
+  ansible.builtin.file:
+    path: "{{ prometheus_install_path }}/{{ item }}"
+    mode: 0755
+    owner: "{{ prometheus_system_user }}"
+    group: "{{ prometheus_system_group }}"
+  loop:
+    - prometheus
+    - promtool
+
+- name: create custom fact file
+  bodsch.core.facts:
+    name: prometheus
+    facts:
+      version: "{{ prometheus_version }}"
+
+- name: create link to binary
+  ansible.builtin.file:
+    src: "{{ prometheus_install_path }}/{{ item }}"
+    dest: "/usr/bin/{{ item }}"
+    state: link
+    force: true
+    follow: false
+  loop:
+    - prometheus
+    - promtool
+  notify:
+    - restart prometheus
+
+- name: create prometheus data directory
+  ansible.builtin.file:
+    path: "{{ prometheus_data_dir }}"
+    state: directory
+    owner: "{{ prometheus_system_user }}"
+    group: "{{ prometheus_system_group }}"
+    mode: 0755
+
+- name: create rules directory
+  ansible.builtin.file:
+    state: directory
+    path: "{{ prometheus_config_dir }}/rules"
+    owner: "{{ prometheus_system_user }}"
+    group: "{{ prometheus_system_group }}"
+    mode: 0750
+
+- name: create targets directory
+  ansible.builtin.file:
+    state: directory
+    path: "{{ prometheus_config_dir }}/targets"
+    owner: "{{ prometheus_system_user }}"
+    group: "{{ prometheus_system_group }}"
+    mode: 0750
+
+- name: create file_sd directory
+  ansible.builtin.file:
+    state: directory
+    path: "{{ prometheus_config_dir }}/file_sd"
+    owner: "{{ prometheus_system_user }}"
+    group: "{{ prometheus_system_group }}"
+    mode: 0750
+
+...

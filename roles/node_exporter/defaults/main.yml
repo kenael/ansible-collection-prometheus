@@ -1,0 +1,40 @@
+---
+
+node_exporter_version: "1.3.1"
+node_exporter_release_download_url: https://github.com/prometheus/node_exporter/releases
+
+node_exporter_system_user: node_exporter
+node_exporter_system_group: node_exporter
+node_exporter_config_dir: /etc/node_exporter
+node_exporter_textfile_dir: /var/lib/node_exporter
+
+node_exporter_direct_download: false
+
+node_exporter_enable_experimental: false
+
+node_exporter_service:
+  log:
+    level: warn
+  web:
+    listen_address: "0.0.0.0:9100"
+    telemetry_path: "/metrics"
+
+# experimental
+node_exporter_tls_server: {}
+# experimental
+node_exporter_http_server: {}
+# experimental
+node_exporter_basic_auth_users: {}
+
+node_exporter_rules: {}
+
+node_exporter_collectors:
+  enabled:
+    - textfile:
+        directory: "/var/lib/node_exporter"
+  #  - filesystem:
+  #      ignored-mount-points: "^/(sys|proc|dev)($|/)"
+  #      ignored-fs-types: "^(sys|proc|auto)fs$"
+  disabled: []
+
+...

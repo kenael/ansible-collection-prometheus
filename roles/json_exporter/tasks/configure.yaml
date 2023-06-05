@@ -1,0 +1,62 @@
+---
+
+- name: systemd
+  when:
+    - ansible_service_mgr | lower == "systemd"
+  block:
+    - name: create systemd service unit
+      ansible.builtin.template:
+        src: "init/systemd/json_exporter.service.j2"
+        dest: "{{ systemd_lib_directory }}/json_exporter.service"
+        owner: root
+        group: root
+        mode: 0644
+      notify:
+        - daemon-reload
+        - restart json_exporter
+
+    - name: create json_exporter run configuration
+      ansible.builtin.template:
+        src: "json_exporter.j2"
+        dest: "{{ json_exporter_defaults_directory }}/json_exporter"
+        force: true
+        owner: root
+        group: "{{ json_exporter_system_group }}"
+        mode: 0644
+      notify:
+        - verify configuration
+        - restart json_exporter
+
+- name: create json_exporter configuration directory
+  ansible.builtin.file:
+    path: "{{ json_exporter_config_dir }}"
+    state: directory
+    owner: root
+    group: "{{ json_exporter_system_group }}"
+    mode: 0770
+
+- name: create systemd json_exporter config
+  ansible.builtin.template:
+    src: json_exporter.j2
+    dest: "{{ json_exporter_defaults_directory }}/json_exporter"
+    mode: 0644
+  notify:
+#    - daemon-reload
+    - restart json_exporter
+
+- name: create json_exporter configuration
+  ansible.builtin.template:
+    src: "config.yml.j2"
+    dest: "{{ json_exporter_config_dir }}/config.yml"
+    force: true
+    owner: root
+    group: "{{ json_exporter_system_group }}"
+    mode: 0644
+  notify:
+    - verify configuration
+    - restart json_exporter
+
+- name: flush handlers
+  ansible.builtin.meta: flush_handlers
+
+...

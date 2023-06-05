@@ -1,0 +1,200 @@
+---
+
+- name: include OS specific configuration ({{ ansible_distribution }} ({{ ansible_os_family }}) {{ ansible_distribution_major_version }})
+  ansible.builtin.include_vars: "{{ lookup('first_found', params) }}"
+  vars:
+    params:
+      paths:
+        - "vars"
+      files:
+        # eg. debian-10 / ubuntu-20.04 / centos-8 / oraclelinux-8
+        - "{{ ansible_distribution | lower }}-{{ ansible_distribution_major_version }}.yml"
+        # eg. archlinux-systemd / archlinux-openrc
+        - "{{ ansible_distribution | lower }}-{{ ansible_service_mgr | lower }}.yml"
+        # eg. debian / ubuntu / centos / oraclelinux
+        - "{{ ansible_distribution | lower }}.yml"
+        # eg. redhat / debian / archlinux
+        - "{{ ansible_os_family | lower }}.yml"
+        # artixlinux
+        - "{{ ansible_os_family | lower | replace(' ', '') }}.yml"
+        - default.yaml
+      skip: true
+
+- name: update package cache
+  ansible.builtin.package:
+    update_cache: true
+
+- name: define delegate instance for download handling
+  ansible.builtin.set_fact:
+    prometheus_delegate_to: "{{ ansible_host }}"
+    prometheus_local_tmp_directory: "{{
+        lookup('env', 'CUSTOM_LOCAL_TMP_DIRECTORY') |
+        default('/var/cache/ansible/prometheus', true) }}/{{ prometheus_version }}"
+  when:
+    - prometheus_direct_download
+
+- name: install dependency
+  ansible.builtin.package:
+    name: "{{ prometheus_requirements }}"
+    state: present
+  when:
+    - prometheus_requirements | default([]) | count > 0
+
+- name: get latest release
+  delegate_to: localhost
+  become: false
+  run_once: true
+  when:
+    - prometheus_version == "latest"
+  block:
+    - name: get latest release
+      delegate_to: localhost
+      become: false
+      run_once: true
+      bodsch.scm.github_latest:
+        project: prometheus
+        repository: prometheus
+        user: "{{ lookup('env', 'GH_USER') | default(omit) }}"
+        password: "{{ lookup('env', 'GH_TOKEN') | default(omit) }}"
+      register: _latest_release
+
+    - name: re-define prometheus_version
+      ansible.builtin.set_fact:
+        prometheus_version: "{{ _latest_release.latest_release }}"
+
+- name: detect our installation path '{{ prometheus_install_path | dirname }}'
+  ansible.builtin.stat:
+    path: "{{ prometheus_install_path | dirname }}"
+    get_checksum: false
+  register: stat_prometheus_path
+  ignore_errors: true
+
+- name: old installation
+  when:
+    - stat_prometheus_path is defined
+    - stat_prometheus_path.stat is defined
+    - stat_prometheus_path.stat.isdir is defined
+    - not stat_prometheus_path.stat.isdir
+  block:
+    - name: stop old service
+      ansible.builtin.service:
+        name: prometheus
+        state: stopped
+        enabled: false
+      notify:
+        - daemon-reload
+
+    - name: remove installed systemd unit
+      ansible.builtin.file:
+        state: absent
+        path: /etc/systemd/system/prometheus.service
+      when:
+        - ansible_service_mgr | lower == "systemd"
+
+    - name: remove installed prometheus
+      ansible.builtin.file:
+        state: absent
+        path: "{{ stat_prometheus_path.stat.path }}"
+
+- name: flush handlers
+  ansible.builtin.meta: flush_handlers
+
+- name: detect installed prometheus binary
+  ansible.builtin.stat:
+    path: "{{ prometheus_install_path }}/prometheus"
+  register: stat_prometheus_binary
+
+- name: create download directory
+  become: false
+  delegate_to: "{{ prometheus_delegate_to }}"
+  ansible.builtin.file:
+    path: "{{ prometheus_local_tmp_directory }}"
+    state: directory
+    mode: 0750
+
+- name: user and group handling
+  when:
+    - prometheus_system_user != "root"
+  block:
+    - name: create prometheus group
+      ansible.builtin.group:
+        name: "{{ prometheus_system_group }}"
+        state: present
+        system: true
+
+    - name: create prometheus user
+      ansible.builtin.user:
+        name: "{{ prometheus_system_user }}"
+        groups: "{{ prometheus_system_group }}"
+        append: true
+        shell: /usr/sbin/nologin
+        system: true
+        createhome: false
+        home: /nonexistent
+
+- name: create install directory
+  ansible.builtin.file:
+    path: "{{ prometheus_install_path }}"
+    state: directory
+    owner: "{{ prometheus_system_user }}"
+    group: "{{ prometheus_system_group }}"
+    mode: 0755
+
+- name: fix directory rights for {{ prometheus_install_path | dirname }}
+  ansible.builtin.file:
+    path: "{{ prometheus_install_path | dirname }}"
+    state: directory
+    owner: "{{ prometheus_system_user }}"
+    group: "{{ prometheus_system_group }}"
+    mode: 0755
+    recurse: true
+
+- name: merge prometheus configuration between defaults and custom
+  ansible.builtin.set_fact:
+    prometheus_service: "{{ prometheus_defaults_service | combine(prometheus_service, recursive=True) }}"
+    prometheus_global: "{{ prometheus_defaults_global | combine(prometheus_global, recursive=True) }}"
+    prometheus_alerting: "{{ prometheus_defaults_alerting | combine(prometheus_alerting, recursive=True) }}"
+    prometheus_remote_write: "{{ prometheus_defaults_remote_write | combine(prometheus_remote_write, recursive=True) }}"
+    prometheus_remote_read: "{{ prometheus_defaults_remote_read | combine(prometheus_remote_read, recursive=True) }}"
+    prometheus_storage: "{{ prometheus_defaults_storage | combine(prometheus_storage, recursive=True) }}"
+    prometheus_tracing: "{{ prometheus_defaults_tracing | combine(prometheus_tracing, recursive=True) }}"
+    prometheus_rule_files: "{{ prometheus_defaults_rule_files | union(prometheus_rule_files) }}"
+    prometheus_scrape_configs: "{{ prometheus_defaults_scrape_configs | union(prometheus_scrape_configs) }}"
+
+# -----------
+
+- name: validate file_sd config in prometheus_scrape_configs
+  ansible.builtin.set_fact:
+    missing_target_definition: "{{ prometheus_scrape_configs | bodsch.prometheus.validate_file_sd(prometheus_file_sd_targets) }}"
+
+- name: Fail when file_sd targets are not defined in prometheus_scrape_configs
+  ansible.builtin.fail:
+    msg: "For the following files a definition in prometheus_file_sd_targets is missing:\n
+      {{ missing_target_definition | join('\n') }}"
+  when:
+    - missing_target_definition is defined
+    - missing_target_definition | count > 0
+
+- name: validate alertmanager endpoints
+  when:
+    - prometheus_alerting is defined
+    - prometheus_alerting.alertmanagers is defined
+    - prometheus_alerting.alertmanagers | count > 0
+  block:
+    - name: validate alertmanager configs
+      ansible.builtin.set_fact:
+        validated_endpoints: "{{ prometheus_alerting.alertmanagers | bodsch.prometheus.validate_alertmanager_endpoints }}"
+
+    - name: Fail when the endpoints not present or not supported
+      ansible.builtin.fail:
+        msg: "The Alertmanager endpoint ar not valid!\nPlease check your config!\n
+             Currently supported endpoints are:\n
+              - {{ validated_endpoints[2] | join('\n - ') }}\n
+             found endpoints:\n
+              - {{ validated_endpoints[1] | default(['']) | join('\n - ') }}\n"
+      when:
+        - validated_endpoints is defined
+        - validated_endpoints[0] is defined
+        - not validated_endpoints[0]
+
+...

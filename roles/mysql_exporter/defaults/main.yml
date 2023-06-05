@@ -1,0 +1,26 @@
+---
+
+mysql_exporter_version: "0.14.0"
+
+mysql_exporter_release_download_url: https://github.com/prometheus/mysqld_exporter/releases
+
+mysql_exporter_system_user: mysql_exporter
+mysql_exporter_system_group: mysql_exporter
+
+mysql_exporter_direct_download: false
+
+mysql_exporter_service: {}
+
+mysql_exporter_credentials:
+  client:
+    hostname: ""
+    port: ""
+    socket: ""
+    username: ""
+    password: ""
+
+mysql_exporter_collectors: []
+#  - global_variables
+#  - engine_innodb_status
+
+...

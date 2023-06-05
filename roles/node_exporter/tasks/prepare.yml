@@ -1,0 +1,159 @@
+---
+
+- name: include OS specific configuration ({{ ansible_distribution }} ({{ ansible_os_family }}) {{ ansible_distribution_major_version }})
+  ansible.builtin.include_vars: "{{ lookup('first_found', params) }}"
+  vars:
+    params:
+      paths:
+        - "vars"
+      files:
+        # eg. debian-10 / ubuntu-20.04 / centos-8 / oraclelinux-8
+        - "{{ ansible_distribution | lower }}-{{ ansible_distribution_major_version }}.yml"
+        # eg. archlinux-systemd / archlinux-openrc
+        - "{{ ansible_distribution | lower }}-{{ ansible_service_mgr | lower }}.yml"
+        # eg. debian / ubuntu / centos / oraclelinux
+        - "{{ ansible_distribution | lower }}.yml"
+        # eg. redhat / debian / archlinux
+        - "{{ ansible_os_family | lower }}.yml"
+        - default.yaml
+      skip: true
+
+- name: update package cache
+  ansible.builtin.package:
+    update_cache: true
+
+- name: define delegate instance for download handling
+  ansible.builtin.set_fact:
+    node_exporter_delegate_to: "{{ ansible_host }}"
+    node_exporter_local_tmp_directory: "{{
+        lookup('env', 'CUSTOM_LOCAL_TMP_DIRECTORY') |
+        default('/var/cache/ansible/node_exporter', true) }}/{{ node_exporter_version }}"
+  when:
+    - node_exporter_direct_download
+
+- name: install dependency
+  ansible.builtin.package:
+    name: "{{ node_exporter_requirements }}"
+    state: present
+  when:
+    - node_exporter_requirements | default([]) | count > 0
+
+- name: get latest release
+  delegate_to: localhost
+  become: false
+  run_once: true
+  when:
+    - node_exporter_version == "latest"
+  block:
+    - name: get latest release
+      delegate_to: localhost
+      become: false
+      run_once: true
+      bodsch.scm.github_latest:
+        project: prometheus
+        repository: node_exporter
+        user: "{{ lookup('env', 'GH_USER') | default(omit) }}"
+        password: "{{ lookup('env', 'GH_TOKEN') | default(omit) }}"
+      register: _latest_release
+
+    - name: re-define node_exporter_version
+      ansible.builtin.set_fact:
+        node_exporter_version: "{{ _latest_release.latest_release }}"
+
+- name: detect our installation path '{{ node_exporter_install_path | dirname }}'
+  ansible.builtin.stat:
+    path: "{{ node_exporter_install_path | dirname }}"
+    get_checksum: false
+  register: stat_node_exporter_path
+  ignore_errors: true
+
+- name: old installation
+  when:
+    - stat_node_exporter_path is defined
+    - stat_node_exporter_path.stat is defined
+    - stat_node_exporter_path.stat.isdir is defined
+    - not stat_node_exporter_path.stat.isdir
+  block:
+    - name: stop old service
+      ansible.builtin.service:
+        name: node_exporter
+        state: stopped
+        enabled: false
+      notify:
+        - daemon-reload
+
+    - name: remove installed systemd unit
+      ansible.builtin.file:
+        state: absent
+        path: /etc/systemd/system/node_exporter.service
+      when:
+        - ansible_service_mgr | lower == "systemd"
+
+    - name: remove installed node_exporter
+      ansible.builtin.file:
+        state: absent
+        path: "{{ stat_node_exporter_path.stat.path }}"
+
+- name: flush handlers
+  ansible.builtin.meta: flush_handlers
+
+- name: detect installed node_exporter binary
+  ansible.builtin.stat:
+    path: "{{ node_exporter_install_path }}/node_exporter"
+  register: stat_node_exporter_binary
+
+- name: create download directory
+  become: false
+  delegate_to: "{{ node_exporter_delegate_to }}"
+  run_once: "{{ 'false' if node_exporter_direct_download else 'true' }}"
+  ansible.builtin.file:
+    path: "{{ node_exporter_local_tmp_directory }}"
+    state: directory
+    mode: 0750
+
+- name: user and group handling
+  when:
+    - node_exporter_system_user != "root"
+  block:
+    - name: create node_exporter group
+      ansible.builtin.group:
+        name: "{{ node_exporter_system_group }}"
+        state: present
+        system: true
+
+    - name: create node_exporter user
+      ansible.builtin.user:
+        name: "{{ node_exporter_system_user }}"
+        groups: "{{ node_exporter_system_group }}"
+        append: true
+        shell: /usr/sbin/nologin
+        system: true
+        createhome: false
+        home: /nonexistent
+
+- name: create install directory
+  ansible.builtin.file:
+    path: "{{ node_exporter_install_path }}"
+    state: directory
+    owner: "{{ node_exporter_system_user }}"
+    group: "{{ node_exporter_system_group }}"
+    mode: 0755
+
+- name: fix directory rights for {{ node_exporter_install_path | dirname }}
+  ansible.builtin.file:
+    path: "{{ node_exporter_install_path | dirname }}"
+    state: directory
+    owner: "{{ node_exporter_system_user }}"
+    group: "{{ node_exporter_system_group }}"
+    mode: 0755
+    recurse: true
+
+- name: merge node_exporter configuration between defaults and custom
+  ansible.builtin.set_fact:
+    node_exporter_service: "{{ node_exporter_defaults_service | combine(node_exporter_service, recursive=True) }}"
+    node_exporter_tls_server: "{{ node_exporter_defaults_tls_server | combine(node_exporter_tls_server, recursive=True) }}"
+    node_exporter_http_server: "{{ node_exporter_defaults_http_server | combine(node_exporter_http_server, recursive=True) }}"
+    node_exporter_basic_auth_users: "{{ node_exporter_defaults_basic_auth_users | combine(node_exporter_basic_auth_users, recursive=True) }}"
+    node_exporter_collectors: "{{ node_exporter_defaults_collectors | combine(node_exporter_collectors, recursive=True) }}"
+
+...

@@ -1,0 +1,13 @@
+---
+
+- name: restart node_exporter if needed
+  ansible.builtin.meta: flush_handlers
+
+- name: ensure node_exporter is enabled on boot
+  become: true
+  ansible.builtin.service:
+    name: node_exporter
+    enabled: true
+    state: started
+
+...

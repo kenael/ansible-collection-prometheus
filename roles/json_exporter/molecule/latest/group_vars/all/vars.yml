@@ -1,0 +1,11 @@
+---
+
+json_exporter_version: latest
+
+json_exporter_service:
+  log:
+    level: warn
+  web:
+    listen_address: "127.0.0.1:7979"
+
+...

@@ -1,0 +1,27 @@
+---
+
+json_exporter_service:
+  log:
+    level: warn
+
+json_exporter_config:
+  - name: example_global_value
+    help: Example of a top-level global value scrape in the json
+    path: "{ .counter }"
+    labels:
+      environment: beta                   # static label
+      location: "planet-{.location}"      # dynamic label
+
+  - name: mgob_backup
+    help: MongoDB Backup
+    type: object
+    path: "{}"
+    labels:
+      environment: DEV                    # static label
+      id: '{[].plan}'                     # dynamic label
+    values:
+      next_run: "{[].next_run}"
+      last_run: "{[].last_run}"
+      last_run_status: "{[].last_run_status}"
+
+...

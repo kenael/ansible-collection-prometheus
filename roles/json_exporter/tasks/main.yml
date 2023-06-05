@@ -1,0 +1,33 @@
+---
+
+- name: prepare
+  ansible.builtin.import_tasks: prepare.yaml
+  tags:
+    - json_exporter_install
+    - json_exporter_configure
+    - json_exporter_run
+
+- name: download archive
+  ansible.builtin.import_tasks: download.yaml
+  tags:
+    - json_exporter_install
+  when:
+    - not stat_json_exporter_binary.stat.exists
+
+- name: install
+  ansible.builtin.import_tasks: install.yaml
+  tags:
+    - json_exporter_install
+
+- name: configure
+  ansible.builtin.import_tasks: configure.yaml
+  tags:
+    - json_exporter_configure
+
+- name: service
+  ansible.builtin.import_tasks: service.yaml
+  tags:
+    - json_exporter_run
+    - json_exporter_configure
+
+...

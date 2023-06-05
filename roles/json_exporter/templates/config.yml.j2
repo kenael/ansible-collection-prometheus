@@ -1,0 +1,11 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
+---
+# {{ ansible_managed }}
+
+{% if json_exporter_config is defined and
+      json_exporter_config | count > 0 %}
+modules:
+  default:
+    metrics:
+      {{ json_exporter_config | to_nice_yaml(indent=2,sort_keys=False) | indent(6, False) }}
+{% endif %}

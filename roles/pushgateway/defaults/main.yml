@@ -1,0 +1,16 @@
+---
+
+pushgateway_version: "1.5.1"
+
+pushgateway_release:
+  download_url: https://github.com/prometheus/pushgateway/releases/
+  file: pushgateway-{{ pushgateway_version }}.linux-{{ go_arch }}.tar.gz
+
+pushgateway_system_user: pushgateway
+pushgateway_system_group: pushgateway
+
+pushgateway_direct_download: false
+
+pushgateway_service: {}
+
+...

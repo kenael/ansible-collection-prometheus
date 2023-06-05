@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+
+. hooks/molecule.rc
+
+set -x
+
+TOX_TEST="${1}"
+
+if [ ! -z "${COLLECTION_ROLE}" ]
+then
+  if [ -d "roles/${COLLECTION_ROLE}" ]
+  then
+    echo "- ${COLLECTION_ROLE} - ${COLLECTION_SCENARIO}"
+
+    pushd "roles/${COLLECTION_ROLE}"
+
+    tox "${TOX_OPTS}" -- molecule ${TOX_TEST} --scenario-name ${COLLECTION_SCENARIO}
+
+    popd
+  else
+    echo "collection role ${COLLECTION_ROLE} not found"
+  fi
+else
+  for role in $(find roles -maxdepth 1 -mindepth 1 -type d -printf "%f\n")
+  do
+    pushd roles/${role}
+
+    if [ -f "./tox.ini" ]
+    then
+      for test in $(find molecule -maxdepth 1 -mindepth 1 -type d -printf "%f\n")
+      do
+        export TOX_SCENARIO=${test}
+
+        tox "${TOX_OPTS}" -- molecule ${TOX_TEST} ${TOX_ARGS}
+      done
+    fi
+
+    popd
+  done
+fi

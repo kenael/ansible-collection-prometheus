@@ -1,0 +1,35 @@
+---
+
+- name: create node_exporter configuration directory
+  ansible.builtin.file:
+    path: "{{ node_exporter_config_dir }}"
+    state: directory
+    owner: root
+    group: "{{ node_exporter_system_group }}"
+    mode: 0770
+
+- name: create node_exporter collector configuration
+  ansible.builtin.template:
+    src: "node_exporter.j2"
+    dest: "{{ node_exporter_defaults_directory }}/node_exporter"
+    force: true
+    owner: root
+    group: "{{ node_exporter_system_group }}"
+    mode: 0640
+  notify:
+    - restart node_exporter
+
+- name: create (experimental) node_exporter configuration
+  ansible.builtin.template:
+    src: "node_exporter/config.yml.j2"
+    dest: "{{ node_exporter_config_dir }}/config.yml"
+    force: true
+    owner: root
+    group: "{{ node_exporter_system_group }}"
+    mode: 0640
+  when:
+    - node_exporter_enable_experimental
+  notify:
+    - restart node_exporter
+
+...

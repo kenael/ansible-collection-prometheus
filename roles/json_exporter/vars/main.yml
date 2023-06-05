@@ -1,0 +1,41 @@
+---
+
+json_exporter_main_version: "{{ json_exporter_version[0:3] }}"
+
+json_exporter_install_path: /usr/local/bin/json_exporter/{{ json_exporter_version }}
+
+json_exporter_delegate_to: localhost
+
+json_exporter_local_tmp_directory: "{{
+  lookup('env', 'CUSTOM_LOCAL_TMP_DIRECTORY') |
+  default(lookup('env', 'HOME') ~ '/.cache/ansible/json_exporter', true) }}/{{ json_exporter_version }}"
+
+json_exporter_requirements:
+  - iproute2
+
+json_exporter_defaults_config: []
+
+json_exporter_defaults_service:
+  config:
+    file: "{{ json_exporter_config_dir }}/config.yml"
+  log:
+    level: info
+    format: ""
+  web:
+    listen_address: "127.0.0.1:7979"
+
+json_exporter_defaults_directory: /etc/default
+
+json_exporter_defaults_release:
+  download_url: https://github.com/prometheus-community/json_exporter/releases
+  file: json_exporter-{{ json_exporter_version }}.{{ ansible_system | lower }}-{{ system_architecture }}.tar.gz
+
+go_arch_map:
+  i386: '386'
+  x86_64: 'amd64'
+
+system_architecture: "{{ go_arch_map[ansible_architecture] | default(ansible_architecture) }}"
+
+systemd_lib_directory: /lib/systemd/system
+
+...

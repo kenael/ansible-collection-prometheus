@@ -1,0 +1,115 @@
+---
+
+- name: include OS specific configuration ({{ ansible_distribution }} ({{ ansible_os_family }}) {{ ansible_distribution_major_version }})
+  ansible.builtin.include_vars: "{{ lookup('first_found', params) }}"
+  vars:
+    params:
+      paths:
+        - "vars"
+      files:
+        # eg. debian-10 / ubuntu-20.04 / centos-8 / oraclelinux-8
+        - "{{ ansible_distribution | lower }}-{{ ansible_distribution_major_version }}.yml"
+        # eg. archlinux-systemd / archlinux-openrc
+        - "{{ ansible_distribution | lower }}-{{ ansible_service_mgr | lower }}.yml"
+        # eg. debian / ubuntu / centos / oraclelinux
+        - "{{ ansible_distribution | lower }}.yml"
+        # eg. redhat / debian / archlinux
+        - "{{ ansible_os_family | lower }}.yml"
+        - default.yaml
+      skip: true
+
+- name: define delegate instance for download handling
+  ansible.builtin.set_fact:
+    trickster_delegate_to: "{{ ansible_host }}"
+    trickster_local_tmp_directory: "{{
+        lookup('env', 'CUSTOM_LOCAL_TMP_DIRECTORY') |
+        default('/var/cache/ansible/trickster', true) }}/{{ trickster_version }}"
+  when:
+    - trickster_direct_download
+
+- name: install dependency
+  ansible.builtin.package:
+    name: "{{ trickster_requirements }}"
+    state: present
+  when:
+    - trickster_requirements | default([]) | count > 0
+
+- name: get latest release
+  delegate_to: localhost
+  become: false
+  run_once: true
+  when:
+    - trickster_version == "latest"
+  block:
+    - name: get latest release
+      delegate_to: localhost
+      become: false
+      run_once: true
+      bodsch.scm.github_latest:
+        project: tricksterproxy
+        repository: trickster
+        user: "{{ lookup('env', 'GH_USER') | default(omit) }}"
+        password: "{{ lookup('env', 'GH_TOKEN') | default(omit) }}"
+      register: _latest_release
+
+    - name: re-define trickster_version
+      ansible.builtin.set_fact:
+        trickster_version: "{{ _latest_release.latest_release }}"
+
+- name: detect installed trickster binary
+  ansible.builtin.stat:
+    path: "{{ trickster_install_path }}/trickster"
+  register: stat_trickster_binary
+
+- name: create download directory
+  become: false
+  delegate_to: "{{ trickster_delegate_to }}"
+  ansible.builtin.file:
+    path: "{{ trickster_local_tmp_directory }}"
+    state: directory
+    mode: 0750
+
+- name: user and group handling
+  when:
+    - trickster_system_user != "root"
+  block:
+    - name: create trickster group
+      ansible.builtin.group:
+        name: "{{ trickster_system_group }}"
+        state: present
+        system: true
+
+    - name: create trickster user
+      ansible.builtin.user:
+        name: "{{ trickster_system_user }}"
+        groups: "{{ trickster_system_group }}"
+        append: true
+        shell: /usr/sbin/nologin
+        system: true
+        createhome: false
+        home: /nonexistent
+
+- name: create install directory
+  ansible.builtin.file:
+    path: "{{ trickster_install_path }}"
+    state: directory
+    owner: "{{ trickster_system_user }}"
+    group: "{{ trickster_system_group }}"
+    mode: 0755
+
+- name: merge trickster configuration between defaults and custom
+  ansible.builtin.set_fact:
+    trickster_service_config: "{{ trickster_defaults_service_config | combine(trickster_service_config, recursive=True) }}"
+    trickster_main: "{{ trickster_defaults_main | combine(trickster_main, recursive=True) }}"
+    trickster_frontend: "{{ trickster_defaults_frontend | combine(trickster_frontend, recursive=True) }}"
+    trickster_caches: "{{ trickster_defaults_caches | combine(trickster_caches, recursive=True) }}"
+    trickster_negative_caches: "{{ trickster_defaults_negative_caches | combine(trickster_negative_caches, recursive=True) }}"
+    trickster_backends: "{{ trickster_defaults_backends | combine(trickster_backends, recursive=True) }}"
+    trickster_rules: "{{ trickster_defaults_rules | combine(trickster_rules, recursive=True) }}"
+    trickster_request_rewriters: "{{ trickster_defaults_request_rewriters | combine(trickster_request_rewriters, recursive=True) }}"
+    trickster_tracing: "{{ trickster_defaults_tracing | combine(trickster_tracing, recursive=True) }}"
+    trickster_metrics: "{{ trickster_defaults_metrics | combine(trickster_metrics, recursive=True) }}"
+    trickster_reloading: "{{ trickster_defaults_reloading | combine(trickster_reloading, recursive=True) }}"
+    trickster_logging: "{{ trickster_defaults_logging | combine(trickster_logging, recursive=True) }}"
+
+...

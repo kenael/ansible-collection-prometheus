@@ -1,0 +1,10 @@
+---
+
+json_exporter_requirements:
+  - iproute
+
+json_exporter_config_directory: /etc/sysconfig
+
+systemd_lib_directory: /usr/lib/systemd/system
+
+...

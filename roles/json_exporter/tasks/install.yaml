@@ -1,0 +1,51 @@
+---
+
+- name: detect binary file for json_exporter
+  become: false
+  delegate_to: "{{ json_exporter_delegate_to }}"
+  run_once: "{{ 'false' if json_exporter_direct_download else 'true' }}"
+  ansible.builtin.stat:
+    path: "{{ json_exporter_local_tmp_directory }}/json_exporter-{{ json_exporter_version }}.{{ ansible_system | lower }}-{{ system_architecture }}/json_exporter"
+  register: stat_file_binary
+
+- name: install json_exporter
+  when:
+    - stat_file_binary.stat.exists
+  block:
+    - name: propagate json_exporter binary
+      ansible.builtin.copy:
+        src: "{{ json_exporter_local_tmp_directory }}/json_exporter-{{ json_exporter_version }}.{{ ansible_system | lower }}-{{ system_architecture }}/json_exporter"
+        dest: "{{ json_exporter_install_path }}/json_exporter"
+        mode: 0755
+        owner: "{{ json_exporter_system_user }}"
+        group: "{{ json_exporter_system_group }}"
+        remote_src: "{{ 'true' if json_exporter_direct_download else 'false' }}"
+  rescue:
+    - name: exit with fail
+      ansible.builtin.fail:
+        msg: "The binary json_exporter was not found!"
+
+- name: create custom fact file
+  bodsch.core.facts:
+    name: json_exporter
+    facts:
+      version: "{{ json_exporter_version }}"
+
+- name: make files executable
+  ansible.builtin.file:
+    path: "{{ json_exporter_install_path }}/json_exporter"
+    mode: 0755
+    owner: "{{ json_exporter_system_user }}"
+    group: "{{ json_exporter_system_group }}"
+
+- name: create link to binary
+  ansible.builtin.file:
+    src: "{{ json_exporter_install_path }}/json_exporter"
+    dest: /usr/bin/json_exporter
+    state: link
+    force: true
+    follow: false
+  notify:
+    - restart json_exporter
+
+...

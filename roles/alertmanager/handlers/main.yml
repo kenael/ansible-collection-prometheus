@@ -1,0 +1,40 @@
+---
+
+- name: restart alertmanager
+  become: true
+  ansible.builtin.service:
+    name: alertmanager
+    state: restarted
+  when:
+    - alertmanger_valid_config is defined
+    - alertmanger_valid_config.rc is defined
+    - alertmanger_valid_config.rc == 0
+
+- name: reload alertmanager
+  become: true
+  ansible.builtin.service:
+    name: alertmanager
+    state: reloaded
+
+- name: validate config
+  amtool:
+    verbose: true
+    state: check
+    config: "{{ alertmanager_config_dir }}/alertmanager.yml"
+  register: alertmanger_valid_config
+  when:
+    - alertmanger_config is defined
+    - alertmanger_config.changed is defined
+    - alertmanger_config.changed
+  notify:
+    - restart alertmanager
+
+- name: daemon-reload
+  become: true
+  ansible.builtin.systemd:
+    daemon_reload: true
+    force: true
+  when:
+    - ansible_service_mgr | lower == "systemd"
+
+...
