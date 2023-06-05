@@ -1,4 +1,5 @@
- ---
+---
+
 name: role prometheus
 
 on:
