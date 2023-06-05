@@ -16,20 +16,26 @@ on:
           - debug
   push:
     branches:
+      - 'main'
       - 'feature/**'
       - 'fix/**'
       - '!doc/**'
     paths:
+      - "!Makefile"
+      - "!README.md"
       - 'roles/prometheus/**'
       - '.github/workflows/test_role_prometheus.yml'
       - '.config/ansible-lint.yml'
       - '.yamllint'
   pull_request:
     branches:
+      - 'main'
       - 'feature/**'
       - 'fix/**'
       - '!doc/**'
     paths:
+      - "!Makefile"
+      - "!README.md"
       - 'roles/prometheus/**'
       - '.github/workflows/test_role_prometheus.yml'
       - '.config/ansible-lint.yml'
