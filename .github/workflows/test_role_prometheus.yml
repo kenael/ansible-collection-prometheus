@@ -61,10 +61,11 @@ jobs:
         ansible-version:
           - '6.7'
         python_version:
-          - 3.6
-          - 3.7
-          - 3.8
-          - 3.10
+          - 3.6.15
+          - 3.7.16
+          - 3.8.16
+          - 3.10.11
+          - 3.11.3
         scenario:
           - default
           - configured
