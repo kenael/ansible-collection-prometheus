@@ -13,5 +13,5 @@ rsync \
   --exclude hooks \
   --exclude __pycache__ \
   --delete \
-  ../$COLLECTION_NAME/* \
+  ../ansible-collection-${COLLECTION_NAME}/* \
   "${COLLECTION_DIR}/"
