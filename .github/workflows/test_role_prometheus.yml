@@ -45,9 +45,9 @@ env:
   COLLECTION_NAMESPACE: bodsch
   COLLECTION_NAME: prometheus
 
-defaults:
-  run:
-    working-directory: 'prometheus'
+#defaults:
+#  run:
+#    working-directory: 'prometheus'
 
 jobs:
   deb:
@@ -87,6 +87,7 @@ jobs:
       - name: install dependencies
         run: |
           python -m pip install --upgrade pip
+          ls -l
           pip install -r test-requirements.txt
 
       - name: Install collection
