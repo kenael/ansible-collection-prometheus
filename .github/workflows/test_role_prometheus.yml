@@ -47,7 +47,7 @@ env:
 
 defaults:
   run:
-    working-directory: 'ansible-collection-prometheus'
+    working-directory: 'prometheus'
 
 jobs:
   deb:
