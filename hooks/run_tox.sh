@@ -2,8 +2,6 @@
 
 . hooks/molecule.rc
 
-set -x
-
 TOX_TEST="${1}"
 
 if [ ! -z "${COLLECTION_ROLE}" ]
