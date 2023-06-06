@@ -5,7 +5,7 @@ name: prometheus with various configuration
 on:
   workflow_run:
     workflows:
-      - "role prometheus"
+      - "prometheus"
     types:
       - completed
 

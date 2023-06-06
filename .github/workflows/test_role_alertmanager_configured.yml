@@ -5,7 +5,7 @@ name: alertmanager with various configuration
 on:
   workflow_run:
     workflows:
-      - "role alertmanager"
+      - "alertmanager"
     types:
       - completed
 
