@@ -58,14 +58,11 @@ jobs:
         run: |
           make \
             test \
-              -e TOX_SCENARIO="${{ matrix.scenario }}" \
               -e TOX_ANSIBLE="ansible_${{ matrix.ansible-version }}" \
               -e DISTRIBUTION="${{ matrix.image }}" \
-              -e COLLECTION_ROLE="${{ matrix.collection_role }}"
+              -e COLLECTION_ROLE="${{ matrix.collection_role }}" \
+              -e COLLECTION_SCENARIO="${{ matrix.scenario }}"
         env:
           PY_COLORS: '1'
           ANSIBLE_FORCE_COLOR: '1'
           DISTRIBUTION: ${{ matrix.image }}
-          COLLECTION_ROLE: ${{ matrix.collection_role }}
-          TOX_SCENARIO: ${{ matrix.scenario }}
-          TOX_ANSIBLE: ansible_${{ matrix.ansible-version }}

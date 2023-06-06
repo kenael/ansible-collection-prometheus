@@ -1,11 +1,11 @@
 ---
 
-name: node_exporter with various configuration
+name: nginx_exporter with various configuration
 
 on:
   workflow_run:
     workflows:
-      - "node_exporter"
+      - "nginx_exporter"
     types:
       - completed
 
@@ -31,9 +31,8 @@ jobs:
         scenario:
           - configured
           - latest
-          - upgrade
         collection_role:
-          - node_exporter
+          - nginx_exporter
 
     steps:
       - name: check out the codebase.
