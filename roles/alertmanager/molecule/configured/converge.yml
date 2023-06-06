@@ -4,4 +4,4 @@
   any_errors_fatal: false
 
   roles:
-    - role: ansible-alertmanager
+    - role: bodsch.prometheus.alertmanager

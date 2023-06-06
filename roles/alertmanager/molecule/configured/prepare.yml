@@ -41,4 +41,4 @@
   hosts: instance
 
   roles:
-    - role: prometheus
+    - role: bodsch.prometheus.prometheus
