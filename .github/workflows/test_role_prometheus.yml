@@ -51,7 +51,7 @@ env:
 
 jobs:
   deb:
-    name: "${{ matrix.image }} / ansible: ${{ matrix.ansible-version }} / python: ${{ matrix.python_version }}"
+    name: "${{ matrix.image }} / ${{ matrix.ansible-version }} / ${{ matrix.python_version }}"
     runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
@@ -61,9 +61,9 @@ jobs:
         ansible-version:
           - '6.7'
         python_version:
-          - "3.6.15"
-          - "3.7.16"
-          - "3.8.16"
+          #- "3.6.15"
+          #- "3.7.16"
+          #- "3.8.16"
           - "3.10.11"
           - "3.11.3"
         scenario:
@@ -87,17 +87,14 @@ jobs:
       - name: install dependencies
         run: |
           python -m pip install --upgrade pip
-          ls -l
           pip install -r test-requirements.txt
 
       - name: Install collection
         run: |
           make \
             install
-          # mkdir -p ~/.ansible/collections/ansible_collections/$COLLECTION_NAMESPACE
-          # cp -a ../ansible-collection-$COLLECTION_NAME ~/.ansible/collections/ansible_collections/$COLLECTION_NAMESPACE/$COLLECTION_NAME
 
-      - name: test with tox
+      - name: test ${{ matrix.collection_role }} - ${{ matrix.scenario }}
         run: |
           make \
             test \
