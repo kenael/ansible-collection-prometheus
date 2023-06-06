@@ -52,7 +52,7 @@ defaults:
 jobs:
   deb:
     name: "${{ matrix.image }} / ansible: ${{ matrix.ansible-version }} / python: ${{ matrix.python_version }}"
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
       matrix:
@@ -61,11 +61,11 @@ jobs:
         ansible-version:
           - '6.7'
         python_version:
-          - 3.6.15
-          - 3.7.16
-          - 3.8.16
-          - 3.10.11
-          - 3.11.3
+          - "3.6.15"
+          - "3.7.16"
+          - "3.8.16"
+          - "3.10.11"
+          - "3.11.3"
         scenario:
           - default
           - configured
