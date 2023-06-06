@@ -6,4 +6,4 @@
   become: false
 
   roles:
-    - role: ansible-prometheus
+    - role: bodsch.prometheus.prometheus
