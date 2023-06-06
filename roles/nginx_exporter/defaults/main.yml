@@ -33,6 +33,4 @@ nginx_exporter_service: {}
 #     ssl_server_key: ""
 #     telemetry_path: /metrics
 
-nginx_exporter_bin: /bin/nginx_exporter
-
 ...

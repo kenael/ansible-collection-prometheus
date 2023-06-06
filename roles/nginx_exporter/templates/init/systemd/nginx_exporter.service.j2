@@ -13,7 +13,7 @@ User              = {{ nginx_exporter_system_user }}
 Group             = {{ nginx_exporter_system_group }}
 
 ExecReload        = /bin/kill -HUP $MAINPID
-ExecStart         = {{ nginx_exporter_bin }} $OPTIONS
+ExecStart         = /usr/bin/nginx_exporter $OPTIONS
 
 SyslogIdentifier  = nginx_exporter
 Restart           = always
