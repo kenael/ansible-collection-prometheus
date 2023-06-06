@@ -6,4 +6,4 @@
   become: false
 
   roles:
-    - role: ansible-pushgateway
+    - role: bodsch.prometheus.pushgateway

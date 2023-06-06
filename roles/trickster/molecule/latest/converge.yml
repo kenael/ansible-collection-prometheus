@@ -9,4 +9,4 @@
     NETRC: ''
 
   roles:
-    - ansible-trickster
+    - role: bodsch.prometheus.trickster

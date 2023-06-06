@@ -1,4 +1,5 @@
 ---
+
 - name: converge
   hosts: instance
   any_errors_fatal: false
@@ -7,4 +8,4 @@
     NETRC: ''
 
   roles:
-    - role: ansible-json-exporter
+    - role: bodsch.prometheus.json_exporter

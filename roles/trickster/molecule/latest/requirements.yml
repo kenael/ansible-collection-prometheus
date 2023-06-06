@@ -1,9 +1,5 @@
 ---
 
-- name: prometheus
-  src: bodsch.prometheus
-  version: 1.5.0
-
 - name: redis
   src: bodsch.redis
   version: 1.4.0

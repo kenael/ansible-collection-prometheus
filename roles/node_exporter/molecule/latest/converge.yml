@@ -6,4 +6,4 @@
   become: false
 
   roles:
-    - role: ansible-node-exporter
+    - role: bodsch.prometheus.node_exporter

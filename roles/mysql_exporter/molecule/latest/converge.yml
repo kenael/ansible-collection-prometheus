@@ -6,4 +6,4 @@
   become: false
 
   roles:
-    - role: ansible-mysql-exporter
+    - role: bodsch.prometheus.mysql_exporter
