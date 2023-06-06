@@ -1,0 +1,33 @@
+---
+
+- name: prepare
+  ansible.builtin.import_tasks: prepare.yml
+  tags:
+    - nginx_exporter_install
+    - nginx_exporter_configure
+    - nginx_exporter_run
+
+- name: download archive
+  ansible.builtin.import_tasks: download.yml
+  become: true
+  tags:
+    - nginx_exporter_install
+
+- name: install
+  ansible.builtin.import_tasks: install.yml
+  tags:
+    - nginx_exporter_install
+
+- name: configure
+  ansible.builtin.import_tasks: configure.yml
+  tags:
+    - nginx_exporter_configure
+
+- name: service
+  ansible.builtin.import_tasks: service.yml
+  become: true
+  tags:
+    - nginx_exporter_run
+    - nginx_exporter_configure
+
+...

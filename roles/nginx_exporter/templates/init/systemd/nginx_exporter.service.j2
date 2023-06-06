@@ -1,0 +1,22 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
+{{ ansible_managed | comment }}
+
+[Unit]
+Description       = Prometheus nginx Exporter
+After             = network-online.target
+
+[Service]
+Type              = simple
+EnvironmentFile   = {{ nginx_exporter_defaults_directory }}/nginx_exporter
+
+User              = {{ nginx_exporter_system_user }}
+Group             = {{ nginx_exporter_system_group }}
+
+ExecReload        = /bin/kill -HUP $MAINPID
+ExecStart         = {{ nginx_exporter_bin }} $OPTIONS
+
+SyslogIdentifier  = nginx_exporter
+Restart           = always
+
+[Install]
+WantedBy          = multi-user.target

@@ -1,0 +1,17 @@
+---
+
+- name: daemon-reload
+  ansible.builtin.systemd:
+    daemon_reload: true
+    force: true
+  notify: restart nginx_exporter
+  when:
+    - ansible_service_mgr == 'systemd'
+
+- name: restart nginx_exporter
+  become: true
+  ansible.builtin.service:
+    name: nginx_exporter
+    state: restarted
+
+...

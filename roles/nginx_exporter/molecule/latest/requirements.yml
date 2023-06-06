@@ -1,0 +1,7 @@
+---
+
+- name: nginx
+  src: geerlingguy.nginx
+  version: 3.1.4
+
+...

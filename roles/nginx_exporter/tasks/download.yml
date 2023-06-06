@@ -1,0 +1,52 @@
+---
+
+- name: checksum
+  become: false
+  delegate_to: localhost
+  run_once: true
+  block:
+    - name: get checksum list
+      bodsch.scm.github_checksum:
+        project: nginxinc
+        repository: nginx-prometheus-exporter
+        checksum_file: sha256sums.txt
+        user: "{{ lookup('env', 'GH_USER') | default(omit) }}"
+        password: "{{ lookup('env', 'GH_TOKEN') | default(omit) }}"
+        architecture: "{{ ansible_architecture }}"
+        system: "{{ ansible_facts.system }}"
+        version: "v{{ nginx_exporter_version }}"
+      register: _latest_checksum
+
+    - name: define checksum for {{ system_architecture }} architecture
+      ansible.builtin.set_fact:
+        __nginx_exporter_checksum: "sha256:{{ _latest_checksum.checksum[0] | split(' ') | first }}"
+      when:
+        - _latest_checksum.rc == 0
+        - _latest_checksum.checksum is defined
+        - _latest_checksum.checksum | string | length > 0
+
+- name: download nginx_exporter binary archive
+  become: false
+  delegate_to: "{{ nginx_exporter_delegate_to }}"
+  run_once: "{{ 'false' if nginx_exporter_direct_download else 'true' }}"
+  ansible.builtin.get_url:
+    url: "{{ nginx_exporter_release.download_url }}/download/v{{ nginx_exporter_version }}/{{ nginx_exporter_release.file }}"
+    dest: "{{ nginx_exporter_local_tmp_directory }}/{{ nginx_exporter_release.file }}"
+    checksum: "{{ __nginx_exporter_checksum | default(omit) }}"
+    mode: 0640
+  register: _download_archive
+  until: _download_archive is succeeded
+  retries: 5
+  delay: 2
+  check_mode: false
+
+- name: extract nginx_exporter archive
+  become: false
+  delegate_to: "{{ nginx_exporter_delegate_to }}"
+  run_once: "{{ 'false' if nginx_exporter_direct_download else 'true' }}"
+  ansible.builtin.unarchive:
+    src: "{{ nginx_exporter_local_tmp_directory }}/{{ nginx_exporter_release.file }}"
+    dest: "{{ nginx_exporter_local_tmp_directory }}/"
+    copy: false
+
+...

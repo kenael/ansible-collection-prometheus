@@ -1,0 +1,117 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
+# {{ ansible_managed }}
+
+OPTIONS="
+{% if nginx_exporter_service is defined %}
+  {# web configuration #}
+  {% if nginx_exporter_service.web.listen_address is defined and
+        nginx_exporter_service.web.listen_address | string | length > 0 %}
+  --web.listen-address {{ nginx_exporter_service.web.listen_address }} \
+  {% endif %}
+  {% if nginx_exporter_service.web.telemetry_path is defined and
+        nginx_exporter_service.web.telemetry_path | string | length > 0 %}
+  --web.telemetry-path {{ nginx_exporter_service.web.telemetry_path }} \
+  {% endif %}
+  {% if nginx_exporter_service.web.secured_metrics is defined and
+        nginx_exporter_service.web.secured_metrics | string | length > 0 and
+        nginx_exporter_service.web.secured_metrics | bool %}
+  --web.secured-metrics \
+  {% endif %}
+  {# nginx #}
+  {% if nginx_exporter_service.nginx.plus is defined and
+        nginx_exporter_service.nginx.plus | string | length > 0 and
+        nginx_exporter_service.nginx.plus | bool %}
+  --nginx.plus \
+  {% endif %}
+  {% if nginx_exporter_service.nginx.retries is defined and
+        nginx_exporter_service.nginx.retries | string | length > 0 %}
+  --nginx.retries {{ nginx_exporter_service.nginx.retries }} \
+  {% endif %}
+  {% if nginx_exporter_service.nginx.retry_interval is defined and
+        nginx_exporter_service.nginx.retry_interval | string | length > 0 %}
+  --nginx.retry-interval {{ nginx_exporter_service.nginx.retry_interval }} \
+  {% endif %}
+  {% if nginx_exporter_service.nginx.scrape_uri is defined and
+        nginx_exporter_service.nginx.scrape_uri | string | length > 0 %}
+  --nginx.scrape-uri {{ nginx_exporter_service.nginx.scrape_uri }} \
+  {% endif %}
+  {% if nginx_exporter_service.nginx.timeout is defined and
+        nginx_exporter_service.nginx.timeout | string | length > 0 %}
+  --nginx.timeout {{ nginx_exporter_service.nginx.timeout }}
+  {% endif %}
+  {% if nginx_exporter_service.nginx.ssl_ca_cert is defined and
+        nginx_exporter_service.nginx.ssl_ca_cert | string | length > 0 %}
+  -nginx.ssl-ca-cert {{ nginx_exporter_service.nginx.ssl_ca_cert }} \
+  {% endif %}
+  {% if nginx_exporter_service.nginx.ssl_client_cert is defined and
+        nginx_exporter_service.nginx.ssl_client_cert | string | length > 0 %}
+  -nginx.ssl-client-cert {{ nginx_exporter_service.nginx.ssl_client_cert }} \
+  {% endif %}
+  {% if nginx_exporter_service.nginx.ssl_client_key is defined and
+        nginx_exporter_service.nginx.ssl_client_key | string | length > 0 %}
+  -nginx.ssl-client-key {{ nginx_exporter_service.nginx.ssl_client_key }} \
+  {% endif %}
+  {% if nginx_exporter_service.nginx.ssl_verify is defined and
+        nginx_exporter_service.nginx.ssl_verify | string | length > 0 and
+        nginx_exporter_service.nginx.ssl_verify | bool %}
+  -nginx.ssl-verify \
+  {% endif %}
+  {# prometheus #}
+  {% if nginx_exporter_service.prometheus.const_labels is defined and
+        nginx_exporter_service.prometheus.const_labels | bodsch.core.type == "dict" and
+        nginx_exporter_service.prometheus.const_labels | count > 0 %}
+  -prometheus.const-labels \
+  {% endif %}
+{% endif %}
+"
+{#
+# Usage of nginx_exporter:
+#   -nginx.plus
+#         Start the exporter for NGINX Plus. By default, the exporter is started for NGINX.
+#         The default value can be overwritten by NGINX_PLUS environment variable.
+#   -nginx.retries uint
+#         A number of retries the exporter will make on start to connect to the NGINX stub_status page/NGINX Plus API before exiting with an error.
+#         The default value can be overwritten by NGINX_RETRIES environment variable.
+#   -nginx.retry-interval value
+#         An interval between retries to connect to the NGINX stub_status page/NGINX Plus API on start.
+#         The default value can be overwritten by NGINX_RETRY_INTERVAL environment variable. (default 5s)
+#   -nginx.scrape-uri string
+#         A URI or unix domain socket path for scraping NGINX or NGINX Plus metrics.
+#         For NGINX, the stub_status page must be available through the URI. For NGINX Plus -- the API.
+#         The default value can be overwritten by SCRAPE_URI environment variable. (default "http://127.0.0.1:8080/stub_status")
+#   -nginx.ssl-ca-cert string
+#         Path to the PEM encoded CA certificate file used to validate the servers SSL certificate.
+#         The default value can be overwritten by SSL_CA_CERT environment variable.
+#   -nginx.ssl-client-cert string
+#         Path to the PEM encoded client certificate file to use when connecting to the server.
+#         The default value can be overwritten by SSL_CLIENT_CERT environment variable.
+#   -nginx.ssl-client-key string
+#         Path to the PEM encoded client certificate key file to use when connecting to the server.
+#         The default value can be overwritten by SSL_CLIENT_KEY environment variable.
+#   -nginx.ssl-verify
+#         Perform SSL certificate verification.
+#         The default value can be overwritten by SSL_VERIFY environment variable. (default true)
+#   -nginx.timeout value
+#         A timeout for scraping metrics from NGINX or NGINX Plus.
+#         The default value can be overwritten by TIMEOUT environment variable. (default 5s)
+#   -prometheus.const-labels value
+#         A comma separated list of constant labels that will be used in every metric.
+#         Format is label1=value1,label2=value2...
+#         The default value can be overwritten by CONST_LABELS environment variable.
+#   -version
+#         Display the NGINX exporter version.
+#   -web.listen-address string
+#         An address or unix domain socket path to listen on for web interface and telemetry.
+#         The default value can be overwritten by LISTEN_ADDRESS environment variable. (default ":9113")
+#   -web.secured-metrics
+#         Expose metrics using https. The default value can be overwritten by SECURED_METRICS variable.
+#   -web.ssl-server-cert string
+#         Path to the PEM encoded certificate for the nginx-exporter metrics server(when web.secured-metrics=true).
+#         The default value can be overwritten by SSL_SERVER_CERT variable.
+#   -web.ssl-server-key string
+#         Path to the PEM encoded key for the nginx-exporter metrics server (when web.secured-metrics=true).
+#         The default value can be overwritten by SSL_SERVER_KEY variable.
+#   -web.telemetry-path string
+#         A path under which to expose metrics.
+#         The default value can be overwritten by TELEMETRY_PATH environment variable. (default "/metrics")
+#}

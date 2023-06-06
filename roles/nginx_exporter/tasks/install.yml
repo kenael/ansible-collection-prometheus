@@ -1,0 +1,51 @@
+---
+
+- name: detect binary file for nginx_exporter
+  become: false
+  delegate_to: "{{ nginx_exporter_delegate_to }}"
+  run_once: "{{ 'false' if nginx_exporter_direct_download else 'true' }}"
+  ansible.builtin.stat:
+    path: "{{ nginx_exporter_local_tmp_directory }}/nginx-prometheus-exporter"
+  register: stat_file_binary
+
+- name: install nginx_exporter
+  when:
+    - stat_file_binary.stat.exists
+  block:
+    - name: propagate nginx_exporter binary
+      ansible.builtin.copy:
+        src: "{{ nginx_exporter_local_tmp_directory }}/nginx-prometheus-exporter"
+        dest: "{{ nginx_exporter_install_path }}/nginx_exporter"
+        mode: 0755
+        owner: "{{ nginx_exporter_system_user }}"
+        group: "{{ nginx_exporter_system_group }}"
+        remote_src: "{{ 'true' if nginx_exporter_direct_download else 'false' }}"
+  rescue:
+    - name: exit with fail
+      ansible.builtin.fail:
+        msg: "The binary nginx_exporter was not found!"
+
+- name: create custom fact file
+  bodsch.core.facts:
+    name: nginx_exporter
+    facts:
+      version: "{{ nginx_exporter_version }}"
+
+- name: make files executable
+  ansible.builtin.file:
+    path: "{{ nginx_exporter_install_path }}/nginx_exporter"
+    mode: 0755
+    owner: "{{ nginx_exporter_system_user }}"
+    group: "{{ nginx_exporter_system_group }}"
+
+- name: create link to binary
+  ansible.builtin.file:
+    src: "{{ nginx_exporter_install_path }}/nginx_exporter"
+    dest: /usr/bin/nginx_exporter
+    state: link
+    force: true
+    follow: false
+  notify:
+    - restart nginx_exporter
+
+...

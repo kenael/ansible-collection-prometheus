@@ -1,0 +1,105 @@
+---
+
+- name: include OS specific configuration ({{ ansible_distribution }} ({{ ansible_os_family }}) {{ ansible_distribution_major_version }})
+  ansible.builtin.include_vars: "{{ lookup('first_found', params) }}"
+  vars:
+    params:
+      paths:
+        - "vars"
+      files:
+        # eg. debian-10 / ubuntu-20.04 / centos-8 / oraclelinux-8
+        - "{{ ansible_distribution | lower }}-{{ ansible_distribution_major_version }}.yml"
+        # eg. archlinux-systemd / archlinux-openrc
+        - "{{ ansible_distribution | lower }}-{{ ansible_service_mgr | lower }}.yml"
+        # eg. debian / ubuntu / centos / oraclelinux
+        - "{{ ansible_distribution | lower }}.yml"
+        # eg. redhat / debian / archlinux
+        - "{{ ansible_os_family | lower }}.yml"
+        - default.yaml
+      skip: true
+
+- name: define delegate instance for download handling
+  ansible.builtin.set_fact:
+    nginx_exporter_delegate_to: "{{ ansible_host }}"
+    nginx_exporter_local_tmp_directory: "{{
+        lookup('env', 'CUSTOM_LOCAL_TMP_DIRECTORY') |
+        default('/var/cache/ansible/nginx_exporter', true) }}/{{ nginx_exporter_version }}"
+  when:
+    - nginx_exporter_direct_download
+
+- name: install dependency
+  ansible.builtin.package:
+    name: "{{ nginx_exporter_requirements }}"
+    state: present
+  when:
+    - nginx_exporter_requirements | default([]) | count > 0
+
+- name: get latest release
+  delegate_to: localhost
+  become: false
+  run_once: true
+  when:
+    - nginx_exporter_version == "latest"
+  block:
+    - name: get latest release
+      delegate_to: localhost
+      become: false
+      run_once: true
+      bodsch.scm.github_latest:
+        project: nginxinc
+        repository: nginx-prometheus-exporter
+        user: "{{ lookup('env', 'GH_USER') | default(omit) }}"
+        password: "{{ lookup('env', 'GH_TOKEN') | default(omit) }}"
+      register: _latest_release
+
+    - name: re-define nginx_exporter_version
+      ansible.builtin.set_fact:
+        nginx_exporter_version: "{{ _latest_release.latest_release }}"
+
+- name: detect installed nginx_exporter binary
+  ansible.builtin.stat:
+    path: "{{ nginx_exporter_install_path }}/nginx_exporter"
+  register: stat_nginx_exporter_binary
+
+- name: create download directory
+  become: false
+  delegate_to: "{{ nginx_exporter_delegate_to }}"
+  ansible.builtin.file:
+    path: "{{ nginx_exporter_local_tmp_directory }}"
+    state: directory
+    mode: 0750
+
+- name: user and group handling
+  when:
+    - nginx_exporter_system_user != "root"
+  block:
+    - name: create nginx_exporter group
+      ansible.builtin.group:
+        name: "{{ nginx_exporter_system_group }}"
+        state: present
+        system: true
+
+    - name: create nginx_exporter user
+      ansible.builtin.user:
+        name: "{{ nginx_exporter_system_user }}"
+        groups: "{{ nginx_exporter_system_group }}"
+        append: true
+        shell: /usr/sbin/nologin
+        system: true
+        createhome: false
+        home: /nonexistent
+
+- name: create install directory
+  ansible.builtin.file:
+    path: "{{ nginx_exporter_install_path }}"
+    state: directory
+    owner: "{{ nginx_exporter_system_user }}"
+    group: "{{ nginx_exporter_system_group }}"
+    mode: 0755
+
+- name: merge nginx_exporter configuration between defaults and custom
+  set_fact:
+    nginx_exporter_release: "{{ nginx_exporter_defaults_release | combine(nginx_exporter_release, recursive=True) }}"
+    nginx_exporter_service: "{{ nginx_exporter_defaults_service | combine(nginx_exporter_service, recursive=True) }}"
+
+...
