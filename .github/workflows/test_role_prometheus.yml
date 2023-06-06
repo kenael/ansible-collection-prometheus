@@ -53,7 +53,6 @@ jobs:
   deb:
     name: "${{ matrix.image }} / ansible: ${{ matrix.ansible-version }} / python: ${{ matrix.python_version }}"
     runs-on: ubuntu-22.04
-    if: ${{ github.event_name == 'schedule' || github.event.workflow_run.conclusion == 'success' }}
     strategy:
       fail-fast: false
       matrix:
