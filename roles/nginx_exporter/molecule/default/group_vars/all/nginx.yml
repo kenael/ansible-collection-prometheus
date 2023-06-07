@@ -1,0 +1,13 @@
+---
+
+nginx_vhosts:
+  - listen: 8080
+    server_name: "_"
+    filename: status.conf
+    extra_parameters: |
+      location / {
+        stub_status on;
+        access_log   off;
+      }
+
+...
