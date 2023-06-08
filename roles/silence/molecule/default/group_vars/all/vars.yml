@@ -1,0 +1,7 @@
+---
+
+# alertmanager_url: http://127.0.0.1:9093
+
+# inventory_name: DEV
+
+...

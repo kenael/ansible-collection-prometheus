@@ -1,0 +1,70 @@
+---
+
+- name: add alertmanager silence
+  tags:
+    - delete_alertmanager_silence
+  block:
+    - name: do facts module to get latest information
+      ansible.builtin.setup:
+
+    - name: set local fact for silencer
+      ansible.builtin.set_fact:
+        latest_silence_id: "{{ ansible_local.silence.silence_id }}"
+      when:
+        - ansible_local.silence is defined
+        - ansible_local.silence.silence_id is defined
+        - ansible_local.silence.silence_id | length != 0
+
+    - name: delete latest silence
+      when:
+        - latest_silence_id is defined
+        - latest_silence_id
+      block:
+        - name: latest silencer ID
+          ansible.builtin.debug:
+            msg: "{{ latest_silence_id }}"
+          when:
+            - latest_silence_id is defined
+
+        - name: delete latest silence
+          ansible.builtin.uri:
+            url: "{{ alertmanager_url }}/api/v1/silence/{{ latest_silence_id }}"
+            method: DELETE
+            status_code:
+              - 200 # ok
+              - 400 # already expired
+          register: silence_resp_del
+
+        - name: result
+          ansible.builtin.debug:
+            msg: "{{ silence_resp_del.json.status }}"
+
+    - name: remove silence fact
+      ansible.builtin.file:
+        path: /etc/ansible/facts.d/silence.fact
+        state: absent
+
+    # - block:
+    #     - name: get current silencers
+    #       uri:
+    #         url: "{{ alertmanager_url }}/api/v1/silences"
+    #         method: GET
+    #         return_content: true
+    #       ignore_errors: true
+    #       register: _current_silencers
+    #
+    #     - name: delete expired silencer
+    #       uri:
+    #         url: "{{ alertmanager_url }}/api/v1/silence/{{ item }}"
+    #         method: DELETE
+    #       loop: "{{ _current_silencers.json.data | expired }}"
+    #       register: silence_resp_del
+    #
+    #     - debug:
+    #         var: silence_resp_del
+    #   when:
+    #     - silence_remove_expired is defined
+    #     - silence_remove_expired
+
+
+...

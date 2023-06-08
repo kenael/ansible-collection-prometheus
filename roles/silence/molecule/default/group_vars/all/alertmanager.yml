@@ -1,0 +1,53 @@
+---
+
+alertmanager_version: 0.23.0
+
+alertmanager_service:
+  log:
+    level: debug
+    format: ""
+  web:
+    listen_address: '127.0.0.1:9093'
+    external_url: 'http://molecule.docker.local'
+
+alertmanager_receivers:
+  blackhole: {}
+
+alertmanager_route:
+  group_by:
+    - 'alertname'
+    - 'service'
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+  default_receiver: blackhole
+
+  routes:
+    # capture all 'test' severity
+    - description: capture all 'test' severity for blackhole
+      receiver: blackhole
+      match:
+        severity: test
+    # capture 'critical' severity
+    - description: capture 'critical' severity
+      matchers:
+        - severity="critical"
+      receiver: blackhole
+
+      routes:
+        # forward MOLECULE to 'blackhole'
+        - matchers:
+            - environment=MOLECULE
+          receiver: blackhole
+
+        - description: "Forward all \"service: cadvisor\" to 'blackhole'"
+          match:
+            service: cadvisor
+          receiver: blackhole
+
+        - description: "forward MOLECULE to 'blackhole'"
+          matchers:
+            - environment=~".*(molecule).*"
+          receiver: blackhole
+
+...
