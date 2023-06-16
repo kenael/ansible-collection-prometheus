@@ -1,0 +1,22 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
+{{ ansible_managed | comment }}
+
+[Unit]
+Description       = Prometheus blackbox Exporter
+After             = network-online.target
+
+[Service]
+Type              = simple
+EnvironmentFile   = {{ blackbox_exporter_defaults_directory }}/blackbox_exporter
+
+User              = {{ blackbox_exporter_system_user }}
+Group             = {{ blackbox_exporter_system_group }}
+
+ExecReload        = /bin/kill -HUP $MAINPID
+ExecStart         = /usr/bin/blackbox_exporter $OPTIONS
+
+SyslogIdentifier  = blackbox_exporter
+Restart           = always
+
+[Install]
+WantedBy          = multi-user.target

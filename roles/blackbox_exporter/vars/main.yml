@@ -1,0 +1,48 @@
+---
+
+blackbox_exporter_main_version: "{{ blackbox_exporter_version[0:3] }}"
+
+blackbox_exporter_install_path: /usr/local/bin/blackbox_exporter/{{ blackbox_exporter_version }}
+
+blackbox_exporter_delegate_to: localhost
+
+blackbox_exporter_local_tmp_directory: "{{
+  lookup('env', 'CUSTOM_LOCAL_TMP_DIRECTORY') |
+  default(lookup('env', 'HOME') ~ '/.cache/ansible/blackbox_exporter', true) }}/{{ blackbox_exporter_version }}"
+
+blackbox_exporter_requirements:
+  - iproute2
+
+blackbox_exporter_defaults_service:
+  log:
+    level: info
+    format: logfmt
+  web:
+    listen_address: "127.0.0.1:9115"
+    external_url: ""
+    route_prefix: ""
+    config:
+      file: ""
+    systemd_socket: ""
+  config:
+    file: "/etc/blackbox_exporter/blackbox_exporter.yml"
+  timeout_offset: "0.5"
+  history:
+    limit: 100
+
+blackbox_exporter_defaults_directory: /etc/default
+
+blackbox_exporter_defaults_release:
+  download_url: https://github.com/prometheus/blackbox_exporter/releases
+  file: blackbox_exporter-{{ blackbox_exporter_version }}.{{ ansible_system | lower }}-{{ system_architecture }}.tar.gz
+
+go_arch_map:
+  i386: '386'
+  x86_64: 'amd64'
+
+system_architecture: "{{ go_arch_map[ansible_architecture] | default(ansible_architecture) }}"
+
+systemd_lib_directory: /lib/systemd/system
+
+
+...

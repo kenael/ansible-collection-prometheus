@@ -1,0 +1,23 @@
+---
+
+- name: daemon-reload
+  ansible.builtin.systemd:
+    daemon_reload: true
+    force: true
+  notify: restart blackbox_exporter
+  when:
+    - ansible_service_mgr == 'systemd'
+
+- name: restart blackbox exporter
+  become: true
+  ansible.builtin.service:
+    name: blackbox_exporter
+    state: restarted
+
+- name: reload blackbox exporter
+  become: true
+  ansible.builtin.service:
+    name: blackbox_exporter
+    state: reloaded
+
+...

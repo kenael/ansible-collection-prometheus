@@ -1,0 +1,51 @@
+---
+
+- name: detect binary file for blackbox_exporter
+  become: false
+  delegate_to: "{{ blackbox_exporter_delegate_to }}"
+  run_once: "{{ 'false' if blackbox_exporter_direct_download else 'true' }}"
+  ansible.builtin.stat:
+    path: "{{ blackbox_exporter_local_tmp_directory }}/blackbox_exporter"
+  register: stat_file_binary
+
+- name: install blackbox_exporter
+  when:
+    - stat_file_binary.stat.exists
+  block:
+    - name: propagate blackbox_exporter binary
+      ansible.builtin.copy:
+        src: "{{ blackbox_exporter_local_tmp_directory }}/blackbox_exporter"
+        dest: "{{ blackbox_exporter_install_path }}/blackbox_exporter"
+        mode: 0755
+        owner: "{{ blackbox_exporter_system_user }}"
+        group: "{{ blackbox_exporter_system_group }}"
+        remote_src: "{{ 'true' if blackbox_exporter_direct_download else 'false' }}"
+  rescue:
+    - name: exit with fail
+      ansible.builtin.fail:
+        msg: "The binary blackbox_exporter was not found!"
+
+- name: create custom fact file
+  bodsch.core.facts:
+    name: blackbox_exporter
+    facts:
+      version: "{{ blackbox_exporter_version }}"
+
+- name: make files executable
+  ansible.builtin.file:
+    path: "{{ blackbox_exporter_install_path }}/blackbox_exporter"
+    mode: 0755
+    owner: "{{ blackbox_exporter_system_user }}"
+    group: "{{ blackbox_exporter_system_group }}"
+
+- name: create link to binary
+  ansible.builtin.file:
+    src: "{{ blackbox_exporter_install_path }}/blackbox_exporter"
+    dest: /usr/bin/blackbox_exporter
+    state: link
+    force: true
+    follow: false
+  notify:
+    - restart blackbox_exporter
+
+...

@@ -1,0 +1,18 @@
+---
+
+blackbox_exporter_version: '0.24.0'
+blackbox_exporter_blackbox_plus: false
+
+blackbox_exporter_system_group: blackbox-exporter
+blackbox_exporter_system_user: "{{ blackbox_exporter_system_group }}"
+blackbox_exporter_config_dir: /etc/blackbox_exporter
+
+blackbox_exporter_direct_download: false
+
+blackbox_exporter_service: {}
+
+blackbox_exporter_release: {}
+
+blackbox_exporter_modules: []
+
+...

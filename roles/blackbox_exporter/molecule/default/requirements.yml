@@ -1,0 +1,6 @@
+---
+
+- name: blackbox
+  src: cloudalchemy.blackbox-exporter
+
+...

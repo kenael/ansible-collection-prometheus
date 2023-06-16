@@ -1,0 +1,9 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
+---
+# {{ ansible_managed }}
+
+modules:
+  {% if blackbox_exporter_modules is defined and
+        blackbox_exporter_modules | count > 0 %}
+  {{ blackbox_exporter_modules | to_nice_yaml(indent=2) | indent(2,False) }}
+  {% endif %}
