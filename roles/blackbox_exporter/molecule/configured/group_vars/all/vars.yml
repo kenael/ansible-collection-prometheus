@@ -4,7 +4,8 @@ blackbox_exporter_modules:
   http_2xx:
     prober: http
     timeout: 5s
-    http:
+    http: {}
+
   http_post_2xx:
     prober: http
     timeout: 5s
@@ -14,6 +15,7 @@ blackbox_exporter_modules:
         username: "username"
         password: "mysecret"
       body_size_limit: 1MB
+
   http_headers:
     prober: http
     timeout: 5s
@@ -21,7 +23,10 @@ blackbox_exporter_modules:
       fail_if_header_not_matches:
         - header: Access-Control-Allow-Origin
           allow_missing: false
+          regexp: ':\['
+
   http_header_match_origin:
+    description: HTTP check for Access-Control-Allow-Origin
     prober: http
     timeout: 5s
     http:
@@ -29,13 +34,14 @@ blackbox_exporter_modules:
       headers:
         Origin: example.com
       fail_if_header_not_matches:
-      - header: Access-Control-Allow-Origin
-        regexp: '(\*|example\.com)'
-        allow_missing: false
+        - header: Access-Control-Allow-Origin
+          regexp: '(\*|example\.com)'
+          allow_missing: false
 
   tcp_connect:
     prober: tcp
     timeout: 5s
+
   pop3s_banner:
     prober: tcp
     tcp:
@@ -44,12 +50,14 @@ blackbox_exporter_modules:
       tls: true
       tls_config:
         insecure_skip_verify: false
+
   ssh_banner:
     prober: tcp
     timeout: 5s
     tcp:
       query_response:
       - expect: "^SSH-2.0-"
+
   smtp_starttls:
     prober: tcp
     timeout: 5s

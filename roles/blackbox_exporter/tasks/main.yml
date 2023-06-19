@@ -10,11 +10,17 @@
 - name: download archive
   ansible.builtin.import_tasks: download.yml
   become: true
+  when:
+    - not stat_blackbox_exporter_binary.stat.exists or
+      not stat_blackbox_exporter_binary.stat.path == blackbox_exporter_install_path ~ '/blackbox_exporter'
   tags:
     - blackbox_exporter_install
 
 - name: install
   ansible.builtin.import_tasks: install.yml
+  when:
+    - not stat_blackbox_exporter_binary.stat.exists or
+      not stat_blackbox_exporter_binary.stat.path == blackbox_exporter_install_path ~ '/blackbox_exporter'
   tags:
     - blackbox_exporter_install
 
