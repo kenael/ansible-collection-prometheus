@@ -13,6 +13,6 @@ blackbox_exporter_service: {}
 
 blackbox_exporter_release: {}
 
-blackbox_exporter_modules: []
+blackbox_exporter_modules: {}
 
 ...

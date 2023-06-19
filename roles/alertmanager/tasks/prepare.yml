@@ -74,7 +74,7 @@
   block:
     - name: stop old service
       ansible.builtin.service:
-        name: prometheus
+        name: alertmanager
         state: stopped
         enabled: false
       notify:

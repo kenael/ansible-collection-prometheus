@@ -1,20 +1,5 @@
 ---
 
-- name: systemd
-  when:
-    - ansible_service_mgr | lower == "systemd"
-  block:
-    - name: create systemd service unit
-      ansible.builtin.template:
-        src: "init/systemd/blackbox_exporter.service.j2"
-        dest: "{{ systemd_lib_directory }}/blackbox_exporter.service"
-        owner: root
-        group: root
-        mode: 0644
-      notify:
-        - daemon-reload
-        - restart blackbox exporter
-
 - name: create blackbox_exporter configuration directory
   ansible.builtin.file:
     path: "{{ blackbox_exporter_config_dir }}"
@@ -22,20 +7,6 @@
     owner: root
     group: "{{ blackbox_exporter_system_group }}"
     mode: 0770
-
-- name: create blackbox_exporter run configuration
-  ansible.builtin.template:
-    src: "default/blackbox_exporter.j2"
-    dest: "{{ blackbox_exporter_defaults_directory }}/blackbox_exporter"
-    force: true
-    owner: root
-    group: "{{ blackbox_exporter_system_group }}"
-    mode: 0644
-  notify:
-    - restart blackbox exporter
-
-- name: flush handlers
-  ansible.builtin.meta: flush_handlers
 
 - name: create blackbox exporter configuration directory
   ansible.builtin.file:
@@ -53,8 +24,5 @@
   notify:
     - validate config
     - reload blackbox exporter
-
-- name: flush handlers
-  ansible.builtin.meta: flush_handlers
 
 ...

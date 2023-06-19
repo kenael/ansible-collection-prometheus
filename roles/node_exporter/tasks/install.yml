@@ -28,7 +28,6 @@
         owner: "{{ node_exporter_system_user }}"
         group: "{{ node_exporter_system_group }}"
 
-
 - name: create custom fact file
   bodsch.core.facts:
     name: node_exporter

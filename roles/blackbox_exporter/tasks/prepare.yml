@@ -56,6 +56,43 @@
       ansible.builtin.set_fact:
         blackbox_exporter_version: "{{ _latest_release.latest_release }}"
 
+- name: detect our installation path '{{ blackbox_exporter_install_path | dirname }}'
+  ansible.builtin.stat:
+    path: "{{ blackbox_exporter_install_path | dirname }}"
+    get_checksum: false
+  register: stat_blackbox_exporter_path
+  ignore_errors: true
+
+- name: old installation
+  when:
+    - stat_blackbox_exporter_path is defined
+    - stat_blackbox_exporter_path.stat is defined
+    - stat_blackbox_exporter_path.stat.isdir is defined
+    - not stat_blackbox_exporter_path.stat.isdir
+  block:
+    - name: stop old service
+      ansible.builtin.service:
+        name: blackbox_exporter
+        state: stopped
+        enabled: false
+      notify:
+        - daemon-reload
+
+    - name: remove installed systemd unit
+      ansible.builtin.file:
+        state: absent
+        path: /etc/systemd/system/blackbox_exporter.service
+      when:
+        - ansible_service_mgr | lower == "systemd"
+
+    - name: remove installed blackbox_exporter
+      ansible.builtin.file:
+        state: absent
+        path: "{{ stat_blackbox_exporter_path.stat.path }}"
+
+- name: flush handlers
+  ansible.builtin.meta: flush_handlers
+
 - name: detect installed blackbox_exporter binary
   ansible.builtin.stat:
     path: "{{ blackbox_exporter_install_path }}/blackbox_exporter"
