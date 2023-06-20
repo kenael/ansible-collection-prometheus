@@ -173,7 +173,7 @@ def test_open_port(host, get_vars):
 
         listen_address = nginx_exporter_web.get("listen_address")
     else:
-        listen_address = "127.0.0.1:9113"
+        listen_address = "127.0.0.1:9213"
 
     service = host.socket(f"tcp://{listen_address}")
     assert service.is_listening

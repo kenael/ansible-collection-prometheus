@@ -60,7 +60,7 @@ OPTIONS="
   {% if nginx_exporter_service.prometheus.const_labels is defined and
         nginx_exporter_service.prometheus.const_labels | bodsch.core.type == "dict" and
         nginx_exporter_service.prometheus.const_labels | count > 0 %}
-  -prometheus.const-labels \
+  -prometheus.const-labels {{ nginx_exporter_service.prometheus.const_labels | bodsch.prometheus.nginx_exporter_prometheus_labels }} \
   {% endif %}
 {% endif %}
 "
