@@ -50,6 +50,9 @@
         repository: trickster
         user: "{{ lookup('env', 'GH_USER') | default(omit) }}"
         password: "{{ lookup('env', 'GH_TOKEN') | default(omit) }}"
+        github_tags: "{{ trickster_scm.use_tags | default('false') }}"
+        without_beta: "{{ trickster_scm.without_beta | default('false') }}"
+        filter_elements: "{{ trickster_scm.version_filter | default([]) }}"
       register: _latest_release
 
     - name: re-define trickster_version

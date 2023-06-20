@@ -4,6 +4,14 @@ trickster_release_download_url: https://github.com/tricksterproxy/trickster/rele
 
 trickster_version: '2.0.0-beta2'
 
+trickster_scm:
+  use_tags: true
+  without_beta: false
+  version_filter: []
+    # - ".*preview"
+    # - ".*beta"
+    # - ".*rc"
+
 trickster_direct_download: false
 
 trickster_system_user: trickster

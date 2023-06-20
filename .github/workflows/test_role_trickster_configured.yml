@@ -29,6 +29,7 @@ jobs:
           - "3.10.11"
           - "3.11.3"
         scenario:
+          - configured
           - latest
         collection_role:
           - trickster
