@@ -95,11 +95,6 @@
 - name: flush handlers
   ansible.builtin.meta: flush_handlers
 
-- name: detect installed alertmanager binary
-  ansible.builtin.stat:
-    path: "{{ alertmanager_install_path }}/alertmanager"
-  register: stat_alertmanager_binary
-
 - name: create download directory
   become: false
   delegate_to: "{{ alertmanager_delegate_to }}"
@@ -127,14 +122,6 @@
         system: true
         createhome: false
         home: /nonexistent
-
-- name: create install directory
-  ansible.builtin.file:
-    path: "{{ alertmanager_install_path }}"
-    state: directory
-    owner: "{{ alertmanager_system_user }}"
-    group: "{{ alertmanager_system_group }}"
-    mode: 0755
 
 - name: merge alertmanager configuration between defaults and custom
   ansible.builtin.set_fact:

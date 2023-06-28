@@ -126,9 +126,9 @@ alertmanager_defaults_time_intervals: {}
 alertmanager_defaults_directory: /etc/default
 
 __alertmanager_files:
-  archive: "v{{ alertmanager_version }}/alertmanager-{{ alertmanager_version }}.linux-{{ go_arch }}.tar.gz"
+  archive: "v{{ alertmanager_version }}/alertmanager-{{ alertmanager_version }}.{{ ansible_facts.system | lower }}-{{ go_arch }}.tar.gz"
   checksum: "v{{ alertmanager_version }}/sha256sums.txt"
-  binary: "alertmanager-{{ alertmanager_version }}.linux-{{ go_arch }}.tar.gz"
+  binary: "alertmanager-{{ alertmanager_version }}.{{ ansible_facts.system | lower }}-{{ go_arch }}.tar.gz"
 
 go_arch_map:
   x86_64: 'amd64'

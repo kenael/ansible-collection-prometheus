@@ -1,5 +1,8 @@
 ---
 
+- name: flush handlers
+  ansible.builtin.meta: flush_handlers
+
 - name: validate alertmanager config
   bodsch.prometheus.amtool:
     verbose: true
