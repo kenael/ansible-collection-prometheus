@@ -15,7 +15,13 @@
       --config.check \
       --config.file={{ json_exporter_service.config.file }}
 
-- name: restart json_exporter
+- name: reload json exporter
+  become: true
+  ansible.builtin.service:
+    name: json_exporter
+    state: reloaded
+
+- name: restart json exporter
   become: true
   ansible.builtin.service:
     name: json_exporter

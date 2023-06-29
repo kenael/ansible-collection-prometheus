@@ -11,8 +11,6 @@
   ansible.builtin.import_tasks: download.yml
   tags:
     - json_exporter_install
-  when:
-    - not stat_json_exporter_binary.stat.exists
 
 - name: install
   ansible.builtin.import_tasks: install.yml
