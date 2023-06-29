@@ -2,12 +2,12 @@
 
 mysql_exporter_version: "0.14.0"
 
-mysql_exporter_release_download_url: https://github.com/prometheus/mysqld_exporter/releases
-
 mysql_exporter_system_user: mysql_exporter
 mysql_exporter_system_group: mysql_exporter
 
 mysql_exporter_direct_download: false
+
+mysql_exporter_release: {}
 
 mysql_exporter_service: {}
 

@@ -118,7 +118,7 @@ def test_directories(host, directories):
 
 
 @pytest.mark.parametrize("files", [
-    "/etc/mysql_exporter/mysql-exporter"
+    "/etc/mysql_exporter/mysql_exporter"
 ])
 def test_files(host, files):
     f = host.file(files)
@@ -146,12 +146,12 @@ def test_files(host, get_vars):
         install_dir = install_dir.replace('latest', version)
 
     files = []
-    files.append("/usr/bin/mysql-exporter")
+    files.append("/usr/bin/mysql_exporter")
 
     if install_dir:
-        files.append(f"{install_dir}/mysql-exporter")
+        files.append(f"{install_dir}/mysql_exporter")
     if defaults_dir and not distribution == "artix":
-        files.append(f"{defaults_dir}/mysql-exporter")
+        files.append(f"{defaults_dir}/mysql_exporter")
     if config_dir:
         files.append(f"{config_dir}/mysql_exporter.cnf")
 
@@ -174,7 +174,7 @@ def test_user(host, get_vars):
 
 
 def test_service(host, get_vars):
-    service = host.service("mysql-exporter")
+    service = host.service("mysql_exporter")
     assert service.is_enabled
     assert service.is_running
 

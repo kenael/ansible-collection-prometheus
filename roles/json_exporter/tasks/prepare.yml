@@ -15,6 +15,8 @@
         - "{{ ansible_distribution | lower }}.yml"
         # eg. redhat / debian / archlinux
         - "{{ ansible_os_family | lower }}.yml"
+        # artixlinux
+        - "{{ ansible_os_family | lower | replace(' ', '') }}.yml"
         - default.yaml
       skip: true
 
@@ -56,18 +58,42 @@
       ansible.builtin.set_fact:
         json_exporter_version: "{{ _latest_release.latest_release }}"
 
-- name: detect installed json_exporter binary
+- name: detect our installation path '{{ json_exporter_install_path | dirname }}'
   ansible.builtin.stat:
-    path: "{{ json_exporter_install_path }}/json_exporter"
-  register: stat_json_exporter_binary
+    path: "{{ json_exporter_install_path | dirname }}"
+    get_checksum: false
+  register: stat_json_exporter_path
+  ignore_errors: true
 
-- name: create download directory
-  become: false
-  delegate_to: "{{ json_exporter_delegate_to }}"
-  ansible.builtin.file:
-    path: "{{ json_exporter_local_tmp_directory }}"
-    state: directory
-    mode: 0750
+- name: old installation
+  when:
+    - stat_json_exporter_path is defined
+    - stat_json_exporter_path.stat is defined
+    - stat_json_exporter_path.stat.isdir is defined
+    - not stat_json_exporter_path.stat.isdir
+  block:
+    - name: stop old service
+      ansible.builtin.service:
+        name: json_exporter
+        state: stopped
+        enabled: false
+      notify:
+        - daemon-reload
+
+    - name: remove installed systemd unit
+      ansible.builtin.file:
+        state: absent
+        path: /etc/systemd/system/json_exporter.service
+      when:
+        - ansible_service_mgr | lower == "systemd"
+
+    - name: remove installed json_exporter
+      ansible.builtin.file:
+        state: absent
+        path: "{{ stat_json_exporter_path.stat.path }}"
+
+- name: flush handlers
+  ansible.builtin.meta: flush_handlers
 
 - name: user and group handling
   when:
@@ -88,14 +114,6 @@
         system: true
         createhome: false
         home: /nonexistent
-
-- name: create install directory
-  ansible.builtin.file:
-    path: "{{ json_exporter_install_path }}"
-    state: directory
-    owner: "{{ json_exporter_system_user }}"
-    group: "{{ json_exporter_system_group }}"
-    mode: 0755
 
 - name: merge json_exporter configuration between defaults and custom
   ansible.builtin.set_fact:

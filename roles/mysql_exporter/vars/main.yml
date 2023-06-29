@@ -19,6 +19,10 @@ mysql_exporter_requirements:
 
 mysql_exporter_defaults_directory: /etc/default
 
+mysql_exporter_defaults_release:
+  download_url: https://github.com/prometheus/mysqld_exporter/releases
+  file: mysqld_exporter-{{ mysql_exporter_version }}.{{ ansible_system | lower }}-{{ system_architecture }}.tar.gz
+
 mysql_exporter_defaults_credentials:
   client:
     hostname: ""

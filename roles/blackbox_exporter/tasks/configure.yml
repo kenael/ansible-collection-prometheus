@@ -1,13 +1,5 @@
 ---
 
-# - name: create blackbox_exporter configuration directory
-#   ansible.builtin.file:
-#     path: "{{ blackbox_exporter_config_dir }}"
-#     state: directory
-#     owner: root
-#     group: "{{ blackbox_exporter_system_group }}"
-#     mode: 0770
-
 - name: create blackbox exporter configuration directory
   ansible.builtin.file:
     state: directory
