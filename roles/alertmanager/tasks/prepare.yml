@@ -17,7 +17,7 @@
         - "{{ ansible_os_family | lower }}.yml"
         # artixlinux
         - "{{ ansible_os_family | lower | replace(' ', '') }}.yml"
-        - default.yaml
+        - default.yml
       skip: true
 
 - name: define delegate instance for download handling
@@ -94,14 +94,6 @@
 
 - name: flush handlers
   ansible.builtin.meta: flush_handlers
-
-- name: create download directory
-  become: false
-  delegate_to: "{{ alertmanager_delegate_to }}"
-  ansible.builtin.file:
-    path: "{{ alertmanager_local_tmp_directory }}"
-    state: directory
-    mode: 0750
 
 - name: user and group handling
   when:

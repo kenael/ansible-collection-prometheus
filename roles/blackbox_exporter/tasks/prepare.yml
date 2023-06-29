@@ -15,7 +15,9 @@
         - "{{ ansible_distribution | lower }}.yml"
         # eg. redhat / debian / archlinux
         - "{{ ansible_os_family | lower }}.yml"
-        - default.yaml
+        # artixlinux
+        - "{{ ansible_os_family | lower | replace(' ', '') }}.yml"
+        - default.yml
       skip: true
 
 - name: define delegate instance for download handling
@@ -93,19 +95,6 @@
 - name: flush handlers
   ansible.builtin.meta: flush_handlers
 
-- name: detect installed blackbox_exporter binary
-  ansible.builtin.stat:
-    path: "{{ blackbox_exporter_install_path }}/blackbox_exporter"
-  register: stat_blackbox_exporter_binary
-
-- name: create download directory
-  become: false
-  delegate_to: "{{ blackbox_exporter_delegate_to }}"
-  ansible.builtin.file:
-    path: "{{ blackbox_exporter_local_tmp_directory }}"
-    state: directory
-    mode: 0750
-
 - name: user and group handling
   when:
     - blackbox_exporter_system_user != "root"
@@ -125,14 +114,6 @@
         system: true
         createhome: false
         home: /nonexistent
-
-- name: create install directory
-  ansible.builtin.file:
-    path: "{{ blackbox_exporter_install_path }}"
-    state: directory
-    owner: "{{ blackbox_exporter_system_user }}"
-    group: "{{ blackbox_exporter_system_group }}"
-    mode: 0755
 
 - name: merge blackbox_exporter configuration between defaults and custom
   set_fact:
