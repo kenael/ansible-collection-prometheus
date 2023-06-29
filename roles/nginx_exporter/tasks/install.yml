@@ -1,6 +1,14 @@
 ---
 
-- name: detect binary file for nginx_exporter
+- name: create install directory
+  ansible.builtin.file:
+    path: "{{ nginx_exporter_install_path }}"
+    state: directory
+    owner: "{{ nginx_exporter_system_user }}"
+    group: "{{ nginx_exporter_system_group }}"
+    mode: 0755
+
+- name: detect extracted binary file for nginx_exporter on '{{ nginx_exporter_delegate_to }}'
   become: false
   delegate_to: "{{ nginx_exporter_delegate_to }}"
   run_once: "{{ 'false' if nginx_exporter_direct_download else 'true' }}"
@@ -8,44 +16,115 @@
     path: "{{ nginx_exporter_local_tmp_directory }}/nginx-prometheus-exporter"
   register: stat_file_binary
 
-- name: install nginx_exporter
+- name: fail when extracted binary are missing
+  ansible.builtin.fail:
+    msg: "missing extracted binary on ansible controller"
   when:
-    - stat_file_binary.stat.exists
+    - not stat_file_binary.stat.exists
+
+- name: detect installed nginx_exporter binary
+  ansible.builtin.stat:
+    path: "{{ nginx_exporter_install_path }}/nginx_exporter"
+  register: stat_nginx_exporter_binary
+
+- name: detect activated nginx_exporter binary
+  ansible.builtin.stat:
+    path: /usr/bin/nginx_exporter
+  register: stat_nginx_exporter_activated
+
+- name: install and activate nginx_exporter
+  when:
+    - stat_nginx_exporter_binary.stat is defined
+    - not stat_nginx_exporter_binary.stat.exists | default('false')
+    - stat_nginx_exporter_activated.stat is defined
+    - not stat_nginx_exporter_activated.stat.exists | default('false')
   block:
-    - name: propagate nginx_exporter binary
-      ansible.builtin.copy:
-        src: "{{ nginx_exporter_local_tmp_directory }}/nginx-prometheus-exporter"
-        dest: "{{ nginx_exporter_install_path }}/nginx_exporter"
-        mode: 0755
-        owner: "{{ nginx_exporter_system_user }}"
+    - name: propagate files
+      block:
+        - name: propagate nginx_exporter binary
+          ansible.builtin.copy:
+            src: "{{ nginx_exporter_local_tmp_directory }}/nginx-prometheus-exporter"
+            dest: "{{ nginx_exporter_install_path }}/nginx_exporter"
+            mode: 0755
+            owner: "{{ nginx_exporter_system_user }}"
+            group: "{{ nginx_exporter_system_group }}"
+            remote_src: "{{ 'true' if nginx_exporter_direct_download else 'false' }}"
+
+        - name: make files executable
+          ansible.builtin.file:
+            path: "{{ nginx_exporter_install_path }}/nginx_exporter"
+            mode: 0755
+            owner: "{{ nginx_exporter_system_user }}"
+            group: "{{ nginx_exporter_system_group }}"
+
+        - name: create link to binary
+          ansible.builtin.file:
+            src: "{{ nginx_exporter_install_path }}/nginx_exporter"
+            dest: /usr/bin/nginx_exporter
+            state: link
+            force: true
+            follow: false
+          notify:
+            - restart nginx exporter
+
+      rescue:
+        - name: delete install directory
+          ansible.builtin.file:
+            path: "{{ nginx_exporter_install_path }}"
+            state: absent
+
+        - name: exit with fail
+          ansible.builtin.fail:
+            msg: A serious error occurred during the installation of the binary.
+
+- name: systemd
+  when:
+    - ansible_service_mgr | lower == "systemd"
+  block:
+    - name: create nginx_exporter run configuration
+      ansible.builtin.template:
+        src: "default/nginx_exporter.j2"
+        dest: "{{ nginx_exporter_defaults_directory }}/nginx_exporter"
+        force: true
+        owner: root
         group: "{{ nginx_exporter_system_group }}"
-        remote_src: "{{ 'true' if nginx_exporter_direct_download else 'false' }}"
-  rescue:
-    - name: exit with fail
-      ansible.builtin.fail:
-        msg: "The binary nginx_exporter was not found!"
+        mode: 0640
+      notify:
+        - restart nginx exporter
+
+    - name: create systemd service unit
+      ansible.builtin.template:
+        src: "init/systemd/nginx_exporter.service.j2"
+        dest: "{{ systemd_lib_directory }}/nginx_exporter.service"
+        owner: root
+        group: root
+        mode: 0644
+      notify:
+        - daemon-reload
+        - restart nginx exporter
+
+- name: openrc
+  when:
+    - ansible_service_mgr | lower == "openrc"
+  block:
+    - name: create openrc service configuration
+      ansible.builtin.template:
+        src: "init/openrc/conf.d/nginx_exporter.j2"
+        dest: "/etc/conf.d/nginx_exporter"
+        owner: root
+        group: root
+        mode: 0644
+
+    - name: create openrc init configuration
+      ansible.builtin.template:
+        src: "init/openrc/init.d/nginx_exporter.j2"
+        dest: "/etc/init.d/nginx_exporter"
+        owner: root
+        group: root
+        mode: 0750
 
 - name: create custom fact file
   bodsch.core.facts:
     name: nginx_exporter
     facts:
       version: "{{ nginx_exporter_version }}"
-
-- name: make files executable
-  ansible.builtin.file:
-    path: "{{ nginx_exporter_install_path }}/nginx_exporter"
-    mode: 0755
-    owner: "{{ nginx_exporter_system_user }}"
-    group: "{{ nginx_exporter_system_group }}"
-
-- name: create link to binary
-  ansible.builtin.file:
-    src: "{{ nginx_exporter_install_path }}/nginx_exporter"
-    dest: /usr/bin/nginx_exporter
-    state: link
-    force: true
-    follow: false
-  notify:
-    - restart nginx_exporter
-
-...

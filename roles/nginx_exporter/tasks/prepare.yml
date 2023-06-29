@@ -15,6 +15,8 @@
         - "{{ ansible_distribution | lower }}.yml"
         # eg. redhat / debian / archlinux
         - "{{ ansible_os_family | lower }}.yml"
+        # artixlinux
+        - "{{ ansible_os_family | lower | replace(' ', '') }}.yml"
         - default.yaml
       skip: true
 
@@ -56,18 +58,42 @@
       ansible.builtin.set_fact:
         nginx_exporter_version: "{{ _latest_release.latest_release }}"
 
-- name: detect installed nginx_exporter binary
+- name: detect our installation path '{{ nginx_exporter_install_path | dirname }}'
   ansible.builtin.stat:
-    path: "{{ nginx_exporter_install_path }}/nginx_exporter"
-  register: stat_nginx_exporter_binary
+    path: "{{ nginx_exporter_install_path | dirname }}"
+    get_checksum: false
+  register: stat_nginx_exporter_path
+  ignore_errors: true
 
-- name: create download directory
-  become: false
-  delegate_to: "{{ nginx_exporter_delegate_to }}"
-  ansible.builtin.file:
-    path: "{{ nginx_exporter_local_tmp_directory }}"
-    state: directory
-    mode: 0750
+- name: old installation
+  when:
+    - stat_nginx_exporter_path is defined
+    - stat_nginx_exporter_path.stat is defined
+    - stat_nginx_exporter_path.stat.isdir is defined
+    - not stat_nginx_exporter_path.stat.isdir
+  block:
+    - name: stop old service
+      ansible.builtin.service:
+        name: nginx_exporter
+        state: stopped
+        enabled: false
+      notify:
+        - daemon-reload
+
+    - name: remove installed systemd unit
+      ansible.builtin.file:
+        state: absent
+        path: /etc/systemd/system/nginx_exporter.service
+      when:
+        - ansible_service_mgr | lower == "systemd"
+
+    - name: remove installed nginx_exporter
+      ansible.builtin.file:
+        state: absent
+        path: "{{ stat_nginx_exporter_path.stat.path }}"
+
+- name: flush handlers
+  ansible.builtin.meta: flush_handlers
 
 - name: user and group handling
   when:
@@ -88,14 +114,6 @@
         system: true
         createhome: false
         home: /nonexistent
-
-- name: create install directory
-  ansible.builtin.file:
-    path: "{{ nginx_exporter_install_path }}"
-    state: directory
-    owner: "{{ nginx_exporter_system_user }}"
-    group: "{{ nginx_exporter_system_group }}"
-    mode: 0755
 
 - name: merge nginx_exporter configuration between defaults and custom
   set_fact:

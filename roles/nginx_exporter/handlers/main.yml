@@ -8,10 +8,16 @@
   when:
     - ansible_service_mgr == 'systemd'
 
-- name: restart nginx_exporter
+- name: restart nginx exporter
   become: true
   ansible.builtin.service:
     name: nginx_exporter
     state: restarted
+
+- name: reload nginx exporter
+  become: true
+  ansible.builtin.service:
+    name: nginx_exporter
+    state: reloaded
 
 ...

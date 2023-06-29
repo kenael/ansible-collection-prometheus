@@ -1,5 +1,8 @@
 ---
 
+- name: flush handlers
+  ansible.builtin.meta: flush_handlers
+
 - name: ensure nginx_exporter is enabled on boot
   become: true
   ansible.builtin.service:
