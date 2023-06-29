@@ -14,7 +14,7 @@
   delegate_to: "{{ blackbox_exporter_delegate_to }}"
   run_once: "{{ 'false' if blackbox_exporter_direct_download else 'true' }}"
   ansible.builtin.stat:
-    path: "{{ blackbox_exporter_local_tmp_directory }}/blackbox_exporter.{{ ansible_facts.system | lower }}-{{ go_arch }}.tar.gz"
+    path: "{{ blackbox_exporter_local_tmp_directory }}/{{ blackbox_exporter_release.file }}"
   register: stat_blackbox_exporter_archive
 
 - name: download

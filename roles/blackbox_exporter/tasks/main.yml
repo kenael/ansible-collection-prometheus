@@ -12,22 +12,22 @@
   become: true
   tags:
     - blackbox_exporter_install
-#
-# - name: install
-#   ansible.builtin.import_tasks: install.yml
-#   tags:
-#     - blackbox_exporter_install
-#
-# - name: configure
-#   ansible.builtin.import_tasks: configure.yml
-#   tags:
-#     - blackbox_exporter_configure
-#
-# - name: service
-#   ansible.builtin.import_tasks: service.yml
-#   become: true
-#   tags:
-#     - blackbox_exporter_run
-#     - blackbox_exporter_configure
+
+- name: install
+  ansible.builtin.import_tasks: install.yml
+  tags:
+    - blackbox_exporter_install
+
+- name: configure
+  ansible.builtin.import_tasks: configure.yml
+  tags:
+    - blackbox_exporter_configure
+
+- name: service
+  ansible.builtin.import_tasks: service.yml
+  become: true
+  tags:
+    - blackbox_exporter_run
+    - blackbox_exporter_configure
 
 ...
