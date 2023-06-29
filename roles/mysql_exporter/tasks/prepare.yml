@@ -15,6 +15,8 @@
         - "{{ ansible_distribution | lower }}.yml"
         # eg. redhat / debian / archlinux
         - "{{ ansible_os_family | lower }}.yml"
+        # artixlinux
+        - "{{ ansible_os_family | lower | replace(' ', '') }}.yml"
         - default.yaml
       skip: true
 
@@ -26,10 +28,6 @@
         default('/var/cache/ansible/mysql_exporter', true) }}/{{ mysql_exporter_version }}"
   when:
     - mysql_exporter_direct_download
-
-- name: update package cache
-  ansible.builtin.package:
-    update_cache: true
 
 - name: install dependency
   ansible.builtin.package:
@@ -60,19 +58,42 @@
       ansible.builtin.set_fact:
         mysql_exporter_version: "{{ _latest_release.latest_release }}"
 
-- name: detect installed mysql_exporter
+- name: detect our installation path '{{ mysql_exporter_install_path | dirname }}'
   ansible.builtin.stat:
-    path: "{{ mysql_exporter_install_path }}/mysql-exporter"
+    path: "{{ mysql_exporter_install_path | dirname }}"
     get_checksum: false
-  register: stat_mysql_exporter_binary
+  register: stat_mysql_exporter_path
+  ignore_errors: true
 
-- name: create download directory
-  become: false
-  delegate_to: "{{ mysql_exporter_delegate_to }}"
-  ansible.builtin.file:
-    path: "{{ mysql_exporter_local_tmp_directory }}"
-    state: directory
-    mode: 0750
+- name: old installation
+  when:
+    - stat_mysql_exporter_path is defined
+    - stat_mysql_exporter_path.stat is defined
+    - stat_mysql_exporter_path.stat.isdir is defined
+    - not stat_mysql_exporter_path.stat.isdir
+  block:
+    - name: stop old service
+      ansible.builtin.service:
+        name: mysql_exporter
+        state: stopped
+        enabled: false
+      notify:
+        - daemon-reload
+
+    - name: remove installed systemd unit
+      ansible.builtin.file:
+        state: absent
+        path: /etc/systemd/system/mysql_exporter.service
+      when:
+        - ansible_service_mgr | lower == "systemd"
+
+    - name: remove installed mysql_exporter
+      ansible.builtin.file:
+        state: absent
+        path: "{{ stat_mysql_exporter_path.stat.path }}"
+
+- name: flush handlers
+  ansible.builtin.meta: flush_handlers
 
 - name: user and group handling
   when:
@@ -94,16 +115,9 @@
         createhome: false
         home: /nonexistent
 
-- name: create install directory
-  ansible.builtin.file:
-    path: "{{ mysql_exporter_install_path }}"
-    state: directory
-    owner: "{{ mysql_exporter_system_user }}"
-    group: "{{ mysql_exporter_system_group }}"
-    mode: 0755
-
 - name: merge mysql_exporter configuration between defaults and custom
   ansible.builtin.set_fact:
+    mysql_exporter_release: "{{ mysql_exporter_defaults_release | combine(mysql_exporter_release, recursive=True) }}"
     mysql_exporter_service: "{{ mysql_exporter_defaults_service | combine(mysql_exporter_service, recursive=True) }}"
     mysql_exporter_credentials: "{{ mysql_exporter_defaults_credentials | combine(mysql_exporter_credentials, recursive=True) | bodsch.prometheus.has_credentials }}"
 

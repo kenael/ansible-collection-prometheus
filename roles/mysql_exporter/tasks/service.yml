@@ -1,12 +1,12 @@
 ---
 
-- name: restart mysql-exporter if needed
+- name: flush handlers
   ansible.builtin.meta: flush_handlers
 
-- name: ensure mysql-exporter is enabled on boot
+- name: ensure mysql_exporter is enabled on boot
   become: true
   ansible.builtin.service:
-    name: mysql-exporter
+    name: mysql_exporter
     enabled: true
     state: started
 

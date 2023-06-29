@@ -20,15 +20,15 @@
     - mysql_exporter_service.config.my_cnf is defined
     - mysql_exporter_service.config.my_cnf | string | length > 0
 
-- name: create mysql_exporter configuration
-  ansible.builtin.template:
-    src: "default/mysql-exporter.j2"
-    dest: "{{ mysql_exporter_defaults_directory }}/mysql-exporter"
-    force: true
-    owner: root
-    group: "{{ mysql_exporter_system_group }}"
-    mode: 0640
-  notify:
-    - restart mysql_exporter
+# - name: create mysql_exporter configuration
+#   ansible.builtin.template:
+#     src: "default/mysql_exporter.j2"
+#     dest: "{{ mysql_exporter_defaults_directory }}/mysql_exporter"
+#     force: true
+#     owner: root
+#     group: "{{ mysql_exporter_system_group }}"
+#     mode: 0640
+#   notify:
+#     - restart mysql_exporter
 
 ...

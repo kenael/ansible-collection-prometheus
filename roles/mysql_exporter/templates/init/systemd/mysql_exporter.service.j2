@@ -1,3 +1,4 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
 {{ ansible_managed | comment }}
 
 [Unit]
@@ -7,14 +8,17 @@ After             = network-online.target
 
 [Service]
 Type              = simple
+EnvironmentFile   = {{ mysql_exporter_defaults_directory }}/mysql_exporter
+
 User              = {{ mysql_exporter_system_user }}
 Group             = {{ mysql_exporter_system_group }}
 
-EnvironmentFile   = {{ mysql_exporter_defaults_directory }}/mysql-exporter
-ExecStart         = /usr/bin/mysql-exporter $OPTIONS
+ExecReload        = /bin/kill -HUP $MAINPID
+ExecStart         = /usr/bin/mysql_exporter $OPTIONS
 
-SyslogIdentifier  = mysql-exporter
+SyslogIdentifier  = mysql_exporter
 Restart           = always
 
 [Install]
+Alias             = mysql-exporter.service
 WantedBy          = multi-user.target
