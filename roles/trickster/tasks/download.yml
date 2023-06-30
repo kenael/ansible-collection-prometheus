@@ -1,26 +1,89 @@
 ---
 
-- name: download trickster archive
+- name: create download directory
   become: false
   delegate_to: "{{ trickster_delegate_to }}"
   run_once: "{{ 'false' if trickster_direct_download else 'true' }}"
-  ansible.builtin.get_url:
-    url: "{{ trickster_release_download_url }}/download/v{{ trickster_version }}/trickster-{{ trickster_version }}.tar.gz"
-    dest: "{{ trickster_local_tmp_directory }}/trickster-{{ trickster_version }}.tar.gz"
-    mode: 0640
-  register: _download_archive
-  until: _download_archive is succeeded
-  retries: 5
-  delay: 2
-  check_mode: false
+  ansible.builtin.file:
+    path: "{{ trickster_local_tmp_directory }}"
+    state: directory
+    mode: 0750
 
-- name: extract trickster archive
+- name: detect the downloaded trickster archive
   become: false
   delegate_to: "{{ trickster_delegate_to }}"
   run_once: "{{ 'false' if trickster_direct_download else 'true' }}"
-  ansible.builtin.unarchive:
-    src: "{{ trickster_local_tmp_directory }}/trickster-{{ trickster_version }}.tar.gz"
-    dest: "{{ trickster_local_tmp_directory }}/"
-    copy: false
+  ansible.builtin.stat:
+    path: "{{ trickster_local_tmp_directory }}/{{ trickster_release.file }}"
+  register: stat_trickster_archive
+
+- name: download
+  when:
+    - stat_trickster_archive.stat is defined
+    - not stat_trickster_archive.stat.exists | default('false')
+  block:
+    # - name: checksum
+    #   become: false
+    #   delegate_to: localhost
+    #   run_once: true
+    #   block:
+    #     - name: get checksum list
+    #       bodsch.scm.github_checksum:
+    #         project: tricksterproxy
+    #         repository: trickster
+    #         checksum_file: sha256sums.txt
+    #         user: "{{ lookup('env', 'GH_USER') | default(omit) }}"
+    #         password: "{{ lookup('env', 'GH_TOKEN') | default(omit) }}"
+    #         architecture: "{{ ansible_architecture }}"
+    #         system: "{{ ansible_facts.system }}"
+    #         version: "v{{ trickster_version }}"
+    #       register: _latest_checksum
+    #
+    #     - name: define checksum for {{ system_architecture }} architecture
+    #       ansible.builtin.set_fact:
+    #         __trickster_checksum: "sha256:{{ _latest_checksum.checksum }}"
+    #       when:
+    #         - _latest_checksum.rc == 0
+    #         - _latest_checksum.checksum is defined
+    #         - _latest_checksum.checksum | string | length > 0
+
+    - name: download trickster binary archive
+      become: false
+      delegate_to: "{{ trickster_delegate_to }}"
+      run_once: "{{ 'false' if trickster_direct_download else 'true' }}"
+      ansible.builtin.get_url:
+        url: "{{ trickster_release.download_url }}/download/v{{ trickster_version }}/{{ trickster_release.file }}"
+        dest: "{{ trickster_local_tmp_directory }}/{{ trickster_release.file }}"
+        # checksum: "{{ __trickster_checksum | default(omit) }}"
+        mode: 0640
+      register: _download_archive
+      until: _download_archive is succeeded
+      retries: 5
+      delay: 2
+      check_mode: false
+
+    - name: extract trickster archive
+      become: false
+      delegate_to: "{{ trickster_delegate_to }}"
+      run_once: "{{ 'false' if trickster_direct_download else 'true' }}"
+      ansible.builtin.unarchive:
+        src: "{{ trickster_local_tmp_directory }}/{{ trickster_release.file }}"
+        dest: "{{ trickster_local_tmp_directory }}/"
+        copy: false
+        extra_opts:
+          - --strip-components=1
+
+  rescue:
+    - name: delete download directory
+      become: false
+      delegate_to: "{{ trickster_delegate_to }}"
+      run_once: "{{ 'false' if trickster_direct_download else 'true' }}"
+      ansible.builtin.file:
+        path: "{{ trickster_local_tmp_directory }}"
+        state: absent
+
+    - name: exit with fail
+      ansible.builtin.fail:
+        msg: A serious error occurred when downloading the archive.
 
 ...

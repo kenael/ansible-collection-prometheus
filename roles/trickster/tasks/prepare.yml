@@ -15,6 +15,8 @@
         - "{{ ansible_distribution | lower }}.yml"
         # eg. redhat / debian / archlinux
         - "{{ ansible_os_family | lower }}.yml"
+        # artixlinux
+        - "{{ ansible_os_family | lower | replace(' ', '') }}.yml"
         - default.yaml
       skip: true
 
@@ -59,18 +61,42 @@
       ansible.builtin.set_fact:
         trickster_version: "{{ _latest_release.latest_release }}"
 
-- name: detect installed trickster binary
+- name: detect our installation path '{{ trickster_install_path | dirname }}'
   ansible.builtin.stat:
-    path: "{{ trickster_install_path }}/trickster"
-  register: stat_trickster_binary
+    path: "{{ trickster_install_path | dirname }}"
+    get_checksum: false
+  register: stat_trickster_path
+  ignore_errors: true
 
-- name: create download directory
-  become: false
-  delegate_to: "{{ trickster_delegate_to }}"
-  ansible.builtin.file:
-    path: "{{ trickster_local_tmp_directory }}"
-    state: directory
-    mode: 0750
+- name: old installation
+  when:
+    - stat_trickster_path is defined
+    - stat_trickster_path.stat is defined
+    - stat_trickster_path.stat.isdir is defined
+    - not stat_trickster_path.stat.isdir
+  block:
+    - name: stop old service
+      ansible.builtin.service:
+        name: trickster
+        state: stopped
+        enabled: false
+      notify:
+        - daemon-reload
+
+    - name: remove installed systemd unit
+      ansible.builtin.file:
+        state: absent
+        path: /etc/systemd/system/trickster.service
+      when:
+        - ansible_service_mgr | lower == "systemd"
+
+    - name: remove installed trickster
+      ansible.builtin.file:
+        state: absent
+        path: "{{ stat_trickster_path.stat.path }}"
+
+- name: flush handlers
+  ansible.builtin.meta: flush_handlers
 
 - name: user and group handling
   when:
@@ -92,16 +118,9 @@
         createhome: false
         home: /nonexistent
 
-- name: create install directory
-  ansible.builtin.file:
-    path: "{{ trickster_install_path }}"
-    state: directory
-    owner: "{{ trickster_system_user }}"
-    group: "{{ trickster_system_group }}"
-    mode: 0755
-
 - name: merge trickster configuration between defaults and custom
   ansible.builtin.set_fact:
+    trickster_release: "{{ trickster_defaults_release | combine(trickster_release, recursive=True) }}"
     trickster_service_config: "{{ trickster_defaults_service_config | combine(trickster_service_config, recursive=True) }}"
     trickster_main: "{{ trickster_defaults_main | combine(trickster_main, recursive=True) }}"
     trickster_frontend: "{{ trickster_defaults_frontend | combine(trickster_frontend, recursive=True) }}"

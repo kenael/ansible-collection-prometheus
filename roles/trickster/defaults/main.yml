@@ -1,7 +1,5 @@
 ---
 
-trickster_release_download_url: https://github.com/tricksterproxy/trickster/releases
-
 trickster_version: '2.0.0-beta2'
 
 trickster_scm:
@@ -11,6 +9,8 @@ trickster_scm:
     # - ".*preview"
     # - ".*beta"
     # - ".*rc"
+
+trickster_release: {}
 
 trickster_direct_download: false
 
@@ -45,5 +45,7 @@ trickster_metrics: {}
 trickster_reloading: {}
 
 trickster_logging: {}
+
+
 
 ...

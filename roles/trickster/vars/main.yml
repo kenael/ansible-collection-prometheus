@@ -1,5 +1,7 @@
 ---
 
+trickster_main_version: "{{ trickster_version[0:3] }}"
+
 trickster_install_path: /usr/local/bin/trickster/{{ trickster_version }}
 
 trickster_delegate_to: localhost
@@ -11,8 +13,6 @@ trickster_local_tmp_directory: "{{
 trickster_requirements:
   - curl
   - iproute2
-
-trickster_defaults_directory: /etc/default
 
 # ------------------------------------------------------------------------------------------------
 
@@ -270,15 +270,18 @@ trickster_defaults_logging:
 
 # ------------------------------------------------------------------------------------------------
 
+trickster_defaults_directory: /etc/default
+
+trickster_defaults_release:
+  download_url: https://github.com/tricksterproxy/trickster/releases
+  file: trickster-{{ trickster_version }}.tar.gz
+
 go_arch_map:
-  i386: '386'
   x86_64: 'amd64'
   aarch64: 'arm64'
   armv7l: 'armv7'
   armv6l: 'armv6'
 
-go_arch: "{{
-  go_arch_map[ansible_architecture] |
-  default(ansible_architecture) }}"
+system_architecture: "{{ go_arch_map[ansible_architecture] | default(ansible_architecture) }}"
 
 systemd_lib_directory: /lib/systemd/system
