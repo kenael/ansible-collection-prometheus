@@ -13,7 +13,7 @@
   delegate_to: "{{ prometheus_delegate_to }}"
   run_once: "{{ 'false' if prometheus_direct_download else 'true' }}"
   ansible.builtin.stat:
-    path: "{{ prometheus_local_tmp_directory }}/prometheus"
+    path: "{{ prometheus_local_tmp_directory }}/{{ prometheus_release.binary }}"
   register: stat_file_binary
 
 - name: fail when extracted binary are missing
@@ -24,7 +24,7 @@
 
 - name: detect installed prometheus binary
   ansible.builtin.stat:
-    path: "{{ prometheus_install_path }}/prometheus"
+    path: "{{ prometheus_install_path }}/{{ prometheus_release.binary }}"
   register: stat_prometheus_binary
 
 - name: detect activated prometheus binary
@@ -50,7 +50,7 @@
             group: "{{ prometheus_system_group }}"
             remote_src: "{{ 'true' if prometheus_direct_download else 'false' }}"
           loop:
-            - prometheus
+            - "{{ prometheus_release.binary }}"
             - promtool
 
         - name: make files executable
@@ -60,7 +60,7 @@
             owner: "{{ prometheus_system_user }}"
             group: "{{ prometheus_system_group }}"
           loop:
-            - prometheus
+            - "{{ prometheus_release.binary }}"
             - promtool
 
         - name: create link to binary
@@ -71,7 +71,7 @@
             force: true
             follow: false
           loop:
-            - prometheus
+            - "{{ prometheus_release.binary }}"
             - promtool
           notify:
             - restart prometheus

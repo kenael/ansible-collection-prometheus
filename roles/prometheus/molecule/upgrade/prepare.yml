@@ -41,7 +41,15 @@
   hosts: all
   gather_facts: true
 
-  roles:
-    - role: ca_node_exporter
+  vars:
+    prometheus_targets:
+      node:
+      - targets:
+        - localhost:9100
+        - demo.cloudalchemy.org:9100
+        labels:
+          env: demosite
 
+  roles:
+    - role: ca_prometheus
 ...

@@ -17,7 +17,7 @@ Ansible role to install and configure [prometheus](https://github.com/prometheus
 If `latest` is set for `prometheus_version`, the role tries to install the latest release version.  
 **Please use this with caution, as incompatibilities between releases may occur!**
 
-The binaries are installed below `/usr/local/bin/prometheus/${prometheus_version}` and later linked to `/usr/bin`. 
+The binaries are installed below `/usr/local/opt/prometheus/${prometheus_version}` and later linked to `/usr/bin`. 
 This should make it possible to downgrade relatively safely.
 
 The Prometheus archive is stored on the Ansible controller, unpacked and then the binaries are copied to the target system.

@@ -13,13 +13,24 @@ lint: |
 
 platforms:
   - name: instance
-    image: "diodonfrost/ansible-${DISTRIBUTION:-debian:11}"
+    image: "bodsch/ansible-${DISTRIBUTION:-debian:11}"
     command: ${MOLECULE_DOCKER_COMMAND:-""}
     docker_host: "${DOCKER_HOST:-unix://run/docker.sock}"
     privileged: true
     pre_build_image: true
-    volumes:
-      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    cgroupns_mode: host
+    mounts:
+      - source: /sys/fs/cgroup
+        target: /sys/fs/cgroup
+        type: bind
+        read_only: false
+      - source: /var/lib/containerd
+        target: /var/lib/containerd
+        type: bind
+        read_only: false
+    tmpfs:
+      - /run
+      - /tmp
 
 provisioner:
   name: ansible
@@ -38,7 +49,6 @@ provisioner:
 
 scenario:
   test_sequence:
-    # - lint
     - destroy
     - dependency
     - syntax

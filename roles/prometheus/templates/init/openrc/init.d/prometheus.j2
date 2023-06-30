@@ -8,7 +8,7 @@ pidfile=${pidfile:-"/run/${RC_SVCNAME}.pid"}
 user=${user:-${SVCNAME}}
 group=${group:-${SVCNAME}}
 
-command="/usr/bin/prometheus"
+command="/usr/bin/{{ prometheus_release.binary }}"
 command_args="${command_args:--config.file=/etc/prometheus/prometheus.yml --storage.tsdb.path=/var/lib/prometheus/data}"
 command_user="${user}:${group}"
 output_log="/var/log/${RC_SVCNAME}/${RC_SVCNAME}.log"
@@ -22,7 +22,7 @@ depend() {
 configtest() {
   ebegin "Checking prometheus' configuration"
 
-  promtool check config /etc/prometheus/prometheus.yml
+  promtool check config {{ prometheus_config_dir }}/prometheus.yml
 
   if [ $? -gt 0 ]; then
     eend $? "failed, please correct errors above"
@@ -36,7 +36,7 @@ start_pre() {
 
   [ -d $(dirname ${output_log}) ] ||  mkdir $(dirname ${output_log})
   chown -R ${command_user} $(dirname ${output_log})
-  chown -R ${command_user} /var/lib/prometheus/
+  chown -R ${command_user} {{ prometheus_data_dir }}
 }
 
 stop_pre() {

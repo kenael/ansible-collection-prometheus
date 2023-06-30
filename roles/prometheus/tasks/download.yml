@@ -17,10 +17,20 @@
     path: "{{ prometheus_local_tmp_directory }}/{{ prometheus_release.file }}"
   register: stat_prometheus_archive
 
+- name: detect extracted binary
+  become: false
+  delegate_to: "{{ prometheus_delegate_to }}"
+  run_once: "{{ 'false' if prometheus_direct_download else 'true' }}"
+  ansible.builtin.stat:
+    path: "{{ prometheus_local_tmp_directory }}/{{ prometheus_release.binary }}"
+  register: stat_prometheus_binary
+
 - name: download
   when:
-    - stat_prometheus_archive.stat is defined
-    - not stat_prometheus_archive.stat.exists | default('false')
+    - (stat_prometheus_archive.stat is defined and
+       not stat_prometheus_archive.stat.exists | default('false')) or
+      (stat_prometheus_binary.stat is defined and
+       not stat_prometheus_binary.stat.exists | default('false'))
   block:
     - name: checksum
       become: false

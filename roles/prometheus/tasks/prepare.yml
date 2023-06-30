@@ -90,7 +90,10 @@
     - name: remove installed prometheus
       ansible.builtin.file:
         state: absent
-        path: "{{ stat_prometheus_path.stat.path }}"
+        path: "{{ item }}"
+      loop:
+        - "{{ stat_prometheus_path.stat.path }}"
+        - "{{ stat_prometheus_path.stat.path | dirname }}/promtool"
 
 - name: flush handlers
   ansible.builtin.meta: flush_handlers

@@ -1,8 +1,8 @@
 ---
 
-- name: ca_node_exporter
-  src: https://github.com/cloudalchemy/ansible-node-exporter.git
+- name: ca_prometheus
+  src: https://github.com/cloudalchemy/ansible-prometheus.git
   scm: git
-  version: 2.0.0
+  version: 4.0.0
 
 ...

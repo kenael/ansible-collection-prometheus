@@ -98,8 +98,15 @@ def get_vars(host):
     return result
 
 
+def local_facts(host):
+    """
+      return local facts
+    """
+    return host.ansible("setup").get("ansible_facts").get("ansible_local").get("prometheus")
+
+
 @pytest.mark.parametrize("dirs", [
-    "/etc/node_exporter",
+    "/etc/prometheus",
 ])
 def test_directories(host, dirs):
     d = host.file(dirs)
@@ -110,19 +117,32 @@ def test_directories(host, dirs):
 def test_files(host, get_vars):
     """
     """
-    install_dir = get_vars.get("node_exporter_install_path")
-    defaults_dir = get_vars.get("node_exporter_defaults_directory")
-    # config_dir = get_vars.get("node_exporter_config_dir")
+    distribution = host.system_info.distribution
+    release = host.system_info.release
+
+    print(f"distribution: {distribution}")
+    print(f"release     : {release}")
+
+    version = local_facts(host).get("version")
+
+    install_dir = get_vars.get("prometheus_install_path")
+    defaults_dir = get_vars.get("prometheus_defaults_directory")
+    config_dir = get_vars.get("prometheus_config_dir")
+
+    if 'latest' in install_dir:
+        install_dir = install_dir.replace('latest', version)
 
     files = []
-    files.append("/usr/bin/node_exporter")
+    files.append("/usr/bin/prometheus")
 
     if install_dir:
-        files.append("{}/node_exporter".format(install_dir))
-    if defaults_dir:
-        files.append("{}/node_exporter".format(defaults_dir))
-    # if config_dir:
-    #     files.append("{}/config.yml".format(config_dir))
+        files.append(f"{install_dir}/prometheus")
+    if defaults_dir and not distribution == "artix":
+        files.append(f"{defaults_dir}/prometheus")
+    if config_dir:
+        files.append(f"{config_dir}/prometheus.yml")
+
+    print(files)
 
     for _file in files:
         f = host.file(_file)
@@ -133,8 +153,8 @@ def test_files(host, get_vars):
 def test_user(host, get_vars):
     """
     """
-    user = get_vars.get("node_exporter_system_user", "node_exp")
-    group = get_vars.get("node_exporter_system_group", "node_exp")
+    user = get_vars.get("prometheus_system_user", "prometheus")
+    group = get_vars.get("prometheus_system_group", "prometheus")
 
     assert host.group(group).exists
     assert host.user(user).exists
@@ -143,7 +163,7 @@ def test_user(host, get_vars):
 
 
 def test_service(host, get_vars):
-    service = host.service("node_exporter")
+    service = host.service("prometheus")
     assert service.is_enabled
     assert service.is_running
 
@@ -152,10 +172,16 @@ def test_open_port(host, get_vars):
     for i in host.socket.get_listening_sockets():
         print(i)
 
-    node_exporter_server = get_vars.get("node_exporter_web")
+    prometheus_service = get_vars.get("prometheus_service", {})
 
-    address = node_exporter_server.get("http_listen_address")
-    port = node_exporter_server.get("http_listen_port")
+    print(prometheus_service)
 
-    service = host.socket("tcp://{0}:{1}".format(address, port))
+    if isinstance(prometheus_service, dict):
+        prometheus_web = prometheus_service.get("web", {})
+
+        listen_address = prometheus_web.get("listen_address", "127.0.0.1:9090")
+    else:
+        listen_address = "0.0.0.0:9090"
+
+    service = host.socket(f"tcp://{listen_address}")
     assert service.is_listening

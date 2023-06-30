@@ -2,25 +2,43 @@
 # {{ ansible_managed }}
 
 [Unit]
-Description      = prometheus, is a systems and service monitoring system.
-After            = network-online.target
+Description             = prometheus, is a systems and service monitoring system.
+
+Requires                = local-fs.target
+After                   = local-fs.target
+After                   = network-online.target
 
 [Service]
-Type             = simple
-Environment      = "GOMAXPROCS={{ ansible_processor_vcpus | default(ansible_processor_count) }}"
-EnvironmentFile  = {{ prometheus_defaults_directory }}/prometheus
+Type                    = simple
+Environment             = "GOMAXPROCS={{ ansible_processor_vcpus | default(ansible_processor_count) }}"
+EnvironmentFile         = {{ prometheus_defaults_directory }}/prometheus
 
-User             = {{ prometheus_system_user }}
-Group            = {{ prometheus_system_group }}
+User                    = {{ prometheus_system_user }}
+Group                   = {{ prometheus_system_group }}
 
-ExecStartPre     = /usr/bin/promtool check config {{ prometheus_config_dir }}/prometheus.yml
+ExecStartPre            = /usr/bin/promtool check config {{ prometheus_config_dir }}/prometheus.yml
 
-ExecReload       = /bin/kill -HUP $MAINPID
-ExecStart        = /usr/bin/prometheus $OPTIONS
+ExecReload              = /bin/kill -HUP $MAINPID
+ExecStart               = /usr/bin/{{ prometheus_release.binary }} $OPTIONS
 
-LimitNOFILE      = 65000
-SyslogIdentifier = prometheus
-Restart          = always
+CapabilityBoundingSet   = CAP_SET_UID
+LockPersonality         = true
+NoNewPrivileges         = true
+MemoryDenyWriteExecute  = true
+PrivateDevices          = true
+PrivateTmp              = true
+ProtectHome             = true
+RemoveIPC               = true
+RestrictSUIDSGID        = true
+# SystemCallFilter        = @signal @timer
+
+ReadWriteDirectories    = {{ prometheus_data_dir }}
+
+ProtectSystem           = full
+
+LimitNOFILE             = 65000
+SyslogIdentifier        = prometheus
+Restart                 = always
 
 [Install]
-WantedBy         = multi-user.target
+WantedBy                = multi-user.target
