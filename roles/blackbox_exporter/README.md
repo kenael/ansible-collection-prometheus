@@ -17,7 +17,7 @@ Ansible role to install and configure [Prometheus Blackbox Exporter](https://git
 If `latest` is set for `blackbox_exporter_version`, the role tries to install the latest release version.  
 **Please use this with caution, as incompatibilities between releases may occur!**
 
-The binaries are installed below `/usr/local/bin/blackbox_exporter/${blackbox_exporter_version}` and later linked to `/usr/bin`. 
+The binaries are installed below `/usr/local/opt/blackbox_exporter/${blackbox_exporter_version}` and later linked to `/usr/bin`. 
 This should make it possible to downgrade relatively safely.
 
 The blackbox_exporter archive is stored on the Ansible controller, unpacked and then the binaries are copied to the target system.

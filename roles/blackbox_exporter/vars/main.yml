@@ -2,7 +2,7 @@
 
 blackbox_exporter_main_version: "{{ blackbox_exporter_version[0:3] }}"
 
-blackbox_exporter_install_path: /usr/local/bin/blackbox_exporter/{{ blackbox_exporter_version }}
+blackbox_exporter_install_path: /usr/local/opt/blackbox_exporter/{{ blackbox_exporter_version }}
 
 blackbox_exporter_delegate_to: localhost
 
