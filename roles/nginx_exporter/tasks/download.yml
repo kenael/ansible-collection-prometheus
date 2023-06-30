@@ -64,15 +64,6 @@
       delay: 2
       check_mode: false
 
-    - name: extract nginx_exporter archive
-      become: false
-      delegate_to: "{{ nginx_exporter_delegate_to }}"
-      run_once: "{{ 'false' if nginx_exporter_direct_download else 'true' }}"
-      ansible.builtin.unarchive:
-        src: "{{ nginx_exporter_local_tmp_directory }}/{{ nginx_exporter_release.file }}"
-        dest: "{{ nginx_exporter_local_tmp_directory }}/"
-        copy: false
-
   rescue:
     - name: delete download directory
       become: false
@@ -85,5 +76,27 @@
     - name: exit with fail
       ansible.builtin.fail:
         msg: A serious error occurred when downloading the archive.
+
+- name: detect extracted binary
+  become: false
+  delegate_to: "{{ nginx_exporter_delegate_to }}"
+  run_once: "{{ 'false' if nginx_exporter_direct_download else 'true' }}"
+  ansible.builtin.stat:
+    path: "{{ nginx_exporter_local_tmp_directory }}/nginx-prometheus-exporter"
+  register: stat_nginx_exporter_binary
+
+- name: extract prometheus archive
+  become: false
+  delegate_to: "{{ nginx_exporter_delegate_to }}"
+  run_once: "{{ 'false' if nginx_exporter_direct_download else 'true' }}"
+  ansible.builtin.unarchive:
+    src: "{{ nginx_exporter_local_tmp_directory }}/{{ nginx_exporter_release.file }}"
+    dest: "{{ nginx_exporter_local_tmp_directory }}/"
+    copy: false
+    #extra_opts:
+    #  - --strip-components=1
+  when:
+    - stat_nginx_exporter_binary.stat is defined
+    - not stat_nginx_exporter_binary.stat.exists | default('false')
 
 ...

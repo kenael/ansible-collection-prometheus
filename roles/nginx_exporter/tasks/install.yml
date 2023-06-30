@@ -24,12 +24,12 @@
 
 - name: detect installed nginx_exporter binary
   ansible.builtin.stat:
-    path: "{{ nginx_exporter_install_path }}/nginx_exporter"
+    path: "{{ nginx_exporter_install_path }}/{{ nginx_exporter_release.binary }}"
   register: stat_nginx_exporter_binary
 
 - name: detect activated nginx_exporter binary
   ansible.builtin.stat:
-    path: /usr/bin/nginx_exporter
+    path: /usr/bin/{{ nginx_exporter_release.binary }}
   register: stat_nginx_exporter_activated
 
 - name: install and activate nginx_exporter
@@ -44,7 +44,7 @@
         - name: propagate nginx_exporter binary
           ansible.builtin.copy:
             src: "{{ nginx_exporter_local_tmp_directory }}/nginx-prometheus-exporter"
-            dest: "{{ nginx_exporter_install_path }}/nginx_exporter"
+            dest: "{{ nginx_exporter_install_path }}/{{ nginx_exporter_release.binary }}"
             mode: 0755
             owner: "{{ nginx_exporter_system_user }}"
             group: "{{ nginx_exporter_system_group }}"
@@ -52,15 +52,15 @@
 
         - name: make files executable
           ansible.builtin.file:
-            path: "{{ nginx_exporter_install_path }}/nginx_exporter"
+            path: "{{ nginx_exporter_install_path }}/{{ nginx_exporter_release.binary }}"
             mode: 0755
             owner: "{{ nginx_exporter_system_user }}"
             group: "{{ nginx_exporter_system_group }}"
 
         - name: create link to binary
           ansible.builtin.file:
-            src: "{{ nginx_exporter_install_path }}/nginx_exporter"
-            dest: /usr/bin/nginx_exporter
+            src: "{{ nginx_exporter_install_path }}/{{ nginx_exporter_release.binary }}"
+            dest: /usr/bin/{{ nginx_exporter_release.binary }}
             state: link
             force: true
             follow: false

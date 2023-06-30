@@ -35,6 +35,7 @@ nginx_exporter_defaults_directory: /etc/default
 nginx_exporter_defaults_release:
   download_url: https://github.com/nginxinc/nginx-prometheus-exporter/releases
   file: nginx-prometheus-exporter_{{ nginx_exporter_version }}_{{ ansible_system | lower }}_{{ system_architecture }}.tar.gz
+  binary: nginx_exporter
 
 go_arch_map:
   i386: '386'
