@@ -1,6 +1,6 @@
 ---
 
-- name: restart pushgateway if needed
+- name: flush handlers
   ansible.builtin.meta: flush_handlers
 
 - name: ensure pushgateway is enabled on boot

@@ -15,12 +15,10 @@
         - "{{ ansible_distribution | lower }}.yml"
         # eg. redhat / debian / archlinux
         - "{{ ansible_os_family | lower }}.yml"
+        # artixlinux
+        - "{{ ansible_os_family | lower | replace(' ', '') }}.yml"
         - default.yaml
       skip: true
-
-- name: update package cache
-  ansible.builtin.package:
-    update_cache: true
 
 - name: define delegate instance for download handling
   ansible.builtin.set_fact:
@@ -35,6 +33,8 @@
   ansible.builtin.package:
     name: "{{ pushgateway_requirements }}"
     state: present
+  when:
+    - pushgateway_requirements | default([]) | count > 0
 
 - name: get latest release
   delegate_to: localhost
@@ -70,18 +70,22 @@
     - stat_pushgateway_path is defined
     - stat_pushgateway_path.stat is defined
     - stat_pushgateway_path.stat.islnk is defined
-    - stat_pushgateway_path.stat.islnk
+    - not stat_pushgateway_path.stat.isdir
   block:
     - name: stop old service
       ansible.builtin.service:
         name: pushgateway
         state: stopped
         enabled: false
+      notify:
+        - daemon-reload
 
     - name: remove installed systemd unit
       ansible.builtin.file:
         state: absent
         path: /etc/systemd/system/pushgateway.service
+      when:
+        - ansible_service_mgr | lower == "systemd"
 
     - name: remove installed pushgateway
       ansible.builtin.file:
@@ -90,19 +94,6 @@
 
 - name: flush handlers
   ansible.builtin.meta: flush_handlers
-
-- name: detect installed pushgateway binary
-  ansible.builtin.stat:
-    path: "{{ pushgateway_install_path }}/pushgateway"
-  register: stat_pushgateway_binary
-
-- name: create download directory
-  become: false
-  delegate_to: "{{ pushgateway_delegate_to }}"
-  ansible.builtin.file:
-    path: "{{ pushgateway_local_tmp_directory }}"
-    state: directory
-    mode: 0750
 
 - name: user and group handling
   when:
@@ -127,14 +118,6 @@
         home: /nonexistent
       when:
         - pushgateway_system_user != "root"
-
-- name: create install directory
-  ansible.builtin.file:
-    path: "{{ pushgateway_install_path }}"
-    state: directory
-    owner: "{{ pushgateway_system_user }}"
-    group: "{{ pushgateway_system_group }}"
-    mode: 0755
 
 - name: merge pushgateway configuration between defaults and custom
   ansible.builtin.set_fact:

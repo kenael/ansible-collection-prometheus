@@ -1,5 +1,13 @@
 ---
 
+- name: daemon-reload
+  become: true
+  ansible.builtin.systemd:
+    daemon_reload: true
+    force: true
+  when:
+    - ansible_service_mgr | lower == "systemd"
+
 - name: restart pushgateway
   become: true
   ansible.builtin.service:
@@ -11,13 +19,5 @@
   ansible.builtin.service:
     name: pushgateway
     state: reloaded
-
-- name: daemon-reload
-  become: true
-  ansible.builtin.systemd:
-    daemon_reload: true
-    force: true
-  when:
-    - ansible_service_mgr | lower == "systemd"
 
 ...

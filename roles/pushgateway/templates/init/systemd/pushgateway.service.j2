@@ -1,4 +1,5 @@
-{{ ansible_managed | comment }}
+#jinja2: trim_blocks: True, lstrip_blocks: True
+# {{ ansible_managed }}
 
 [Unit]
 Description      = Pushgateway allow ephemeral and batch jobs to expose their metrics to Prometheus
@@ -7,7 +8,7 @@ After            = network-online.target
 [Service]
 Type             = simple
 Environment      = "GOMAXPROCS={{ ansible_processor_vcpus | default(ansible_processor_count) }}"
-EnvironmentFile  = {{ pushgateway_config_directory }}/pushgateway
+EnvironmentFile  = {{ pushgateway_defaults_directory }}/pushgateway
 
 User             = {{ pushgateway_system_user }}
 Group            = {{ pushgateway_system_group }}

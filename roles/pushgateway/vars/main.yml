@@ -1,9 +1,5 @@
 ---
 
-pushgateway_defaults_release:
-  download_url: https://github.com/prometheus/pushgateway/releases/
-  file: pushgateway-{{ pushgateway_version }}.linux-{{ go_arch }}.tar.gz
-
 pushgateway_main_version: "{{ pushgateway_version[0:3] }}"
 
 pushgateway_install_path: /usr/local/bin/pushgateway/{{ pushgateway_version }}
@@ -36,16 +32,20 @@ pushgateway_defaults_service:
   push:
     disable_consistency_check: false
 
-pushgateway_config_directory: /etc/default
+pushgateway_defaults_directory: /etc/default
 
-systemd_lib_directory: /lib/systemd/system
+pushgateway_defaults_release:
+  download_url: https://github.com/prometheus/pushgateway/releases/
+  file: pushgateway-{{ pushgateway_version }}.{{ ansible_system | lower }}-{{ system_architecture }}.tar.gz
 
 go_arch_map:
-  i386: '386'
   x86_64: 'amd64'
+  aarch64: 'arm64'
+  armv7l: 'armv7'
+  armv6l: 'armv6'
 
-go_arch: "{{
-  go_arch_map[ansible_architecture] |
-  default(ansible_architecture) }}"
+system_architecture: "{{ go_arch_map[ansible_architecture] | default(ansible_architecture) }}"
+
+systemd_lib_directory: /lib/systemd/system
 
 ...

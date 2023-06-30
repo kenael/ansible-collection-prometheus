@@ -5,15 +5,9 @@
 
 - name: download archive
   ansible.builtin.include_tasks: download.yml
-  when:
-    - not stat_pushgateway_binary.stat.exists or
-      not stat_pushgateway_binary.stat.path == pushgateway_install_path ~ '/pushgateway'
 
 - name: install
   ansible.builtin.include_tasks: install.yml
-  when:
-    - not stat_pushgateway_binary.stat.exists or
-      not stat_pushgateway_binary.stat.path == pushgateway_install_path ~ '/pushgateway'
 
 - name: configure
   ansible.builtin.include_tasks: configure.yml

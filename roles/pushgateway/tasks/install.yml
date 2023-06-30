@@ -1,11 +1,19 @@
 ---
 
-- name: detect binary file for pushgateway on {{ pushgateway_delegate_to }}
+- name: create install directory
+  ansible.builtin.file:
+    path: "{{ pushgateway_install_path }}"
+    state: directory
+    owner: "{{ pushgateway_system_user }}"
+    group: "{{ pushgateway_system_group }}"
+    mode: 0755
+
+- name: detect extracted binary file for pushgateway on '{{ pushgateway_delegate_to }}'
   become: false
   delegate_to: "{{ pushgateway_delegate_to }}"
   run_once: "{{ 'false' if pushgateway_direct_download else 'true' }}"
   ansible.builtin.stat:
-    path: "{{ pushgateway_local_tmp_directory }}/pushgateway-{{ pushgateway_version }}.linux-{{ go_arch }}/pushgateway"
+    path: "{{ pushgateway_local_tmp_directory }}/pushgateway"
   register: stat_file_binary
 
 - name: fail when extracted binary are missing
@@ -14,38 +22,60 @@
   when:
     - not stat_file_binary.stat.exists
 
-- name: propagate pushgateway binaries
-  ansible.builtin.copy:
-    src: "{{ pushgateway_local_tmp_directory }}/pushgateway-{{ pushgateway_version }}.linux-{{ go_arch }}/pushgateway"
-    dest: "{{ pushgateway_install_path }}/pushgateway"
-    mode: 0755
-    owner: "{{ pushgateway_system_user }}"
-    group: "{{ pushgateway_system_group }}"
-    remote_src: "{{ 'true' if pushgateway_direct_download else 'false' }}"
-  when:
-    - stat_file_binary.stat.exists
-
-- name: make files executable
-  ansible.builtin.file:
+- name: detect installed pushgateway binary
+  ansible.builtin.stat:
     path: "{{ pushgateway_install_path }}/pushgateway"
-    mode: 0755
-    owner: "{{ pushgateway_system_user }}"
-    group: "{{ pushgateway_system_group }}"
+  register: stat_pushgateway_binary
 
-- name: create link to binary
-  ansible.builtin.file:
-    src: "{{ pushgateway_install_path }}/pushgateway"
-    dest: /usr/bin/pushgateway
-    state: link
-    force: true
-  notify:
-    - restart pushgateway
+- name: detect activated pushgateway binary
+  ansible.builtin.stat:
+    path: /usr/bin/pushgateway
+  register: stat_pushgateway_activated
 
-- name: create custom fact file
-  bodsch.core.facts:
-    name: pushgateway
-    facts:
-      version: "{{ pushgateway_version }}"
+- name: install and activate pushgateway
+  when:
+    - stat_pushgateway_binary.stat is defined
+    - not stat_pushgateway_binary.stat.exists | default('false')
+    - stat_pushgateway_activated.stat is defined
+    - not stat_pushgateway_activated.stat.exists | default('false')
+  block:
+    - name: propagate files
+      block:
+        - name: propagate pushgateway binary
+          ansible.builtin.copy:
+            src: "{{ pushgateway_local_tmp_directory }}/pushgateway"
+            dest: "{{ pushgateway_install_path }}/pushgateway"
+            mode: 0755
+            owner: "{{ pushgateway_system_user }}"
+            group: "{{ pushgateway_system_group }}"
+            remote_src: "{{ 'true' if pushgateway_direct_download else 'false' }}"
+
+        - name: make files executable
+          ansible.builtin.file:
+            path: "{{ pushgateway_install_path }}/pushgateway"
+            mode: 0755
+            owner: "{{ pushgateway_system_user }}"
+            group: "{{ pushgateway_system_group }}"
+
+        - name: create link to binary
+          ansible.builtin.file:
+            src: "{{ pushgateway_install_path }}/pushgateway"
+            dest: /usr/bin/pushgateway
+            state: link
+            force: true
+            follow: false
+          notify:
+            - restart pushgateway
+
+      rescue:
+        - name: delete install directory
+          ansible.builtin.file:
+            path: "{{ pushgateway_install_path }}"
+            state: absent
+
+        - name: exit with fail
+          ansible.builtin.fail:
+            msg: A serious error occurred during the installation of the binary.
 
 - name: create persistence directory
   ansible.builtin.file:
@@ -58,17 +88,56 @@
     - pushgateway_service.persistence.file is defined
     - pushgateway_service.persistence.file | string | length > 0
 
-- name: create systemd service unit
-  ansible.builtin.template:
-    src: "init/systemd/pushgateway.service.j2"
-    dest: "{{ systemd_lib_directory }}/pushgateway.service"
-    owner: root
-    group: root
-    mode: 0644
-  notify:
-    - daemon-reload
-    - restart pushgateway
+- name: systemd
   when:
     - ansible_service_mgr | lower == "systemd"
+  block:
+    - name: create pushgateway run configuration
+      ansible.builtin.template:
+        src: "default/pushgateway.j2"
+        dest: "{{ pushgateway_defaults_directory }}/pushgateway"
+        force: true
+        owner: root
+        group: "{{ pushgateway_system_group }}"
+        mode: 0640
+      notify:
+        - restart pushgateway
+
+    - name: create systemd service unit
+      ansible.builtin.template:
+        src: "init/systemd/pushgateway.service.j2"
+        dest: "{{ systemd_lib_directory }}/pushgateway.service"
+        owner: root
+        group: root
+        mode: 0644
+      notify:
+        - daemon-reload
+        - restart pushgateway
+
+- name: openrc
+  when:
+    - ansible_service_mgr | lower == "openrc"
+  block:
+    - name: create openrc service configuration
+      ansible.builtin.template:
+        src: "init/openrc/conf.d/pushgateway.j2"
+        dest: "/etc/conf.d/pushgateway"
+        owner: root
+        group: root
+        mode: 0644
+
+    - name: create openrc init configuration
+      ansible.builtin.template:
+        src: "init/openrc/init.d/pushgateway.j2"
+        dest: "/etc/init.d/pushgateway"
+        owner: root
+        group: root
+        mode: 0750
+
+- name: create custom fact file
+  bodsch.core.facts:
+    name: pushgateway
+    facts:
+      version: "{{ pushgateway_version }}"
 
 ...
