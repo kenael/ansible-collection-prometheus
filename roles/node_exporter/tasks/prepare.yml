@@ -15,12 +15,10 @@
         - "{{ ansible_distribution | lower }}.yml"
         # eg. redhat / debian / archlinux
         - "{{ ansible_os_family | lower }}.yml"
+        # artixlinux
+        - "{{ ansible_os_family | lower | replace(' ', '') }}.yml"
         - default.yaml
       skip: true
-
-- name: update package cache
-  ansible.builtin.package:
-    update_cache: true
 
 - name: define delegate instance for download handling
   ansible.builtin.set_fact:
@@ -97,20 +95,6 @@
 - name: flush handlers
   ansible.builtin.meta: flush_handlers
 
-- name: detect installed node_exporter binary
-  ansible.builtin.stat:
-    path: "{{ node_exporter_install_path }}/node_exporter"
-  register: stat_node_exporter_binary
-
-- name: create download directory
-  become: false
-  delegate_to: "{{ node_exporter_delegate_to }}"
-  run_once: "{{ 'false' if node_exporter_direct_download else 'true' }}"
-  ansible.builtin.file:
-    path: "{{ node_exporter_local_tmp_directory }}"
-    state: directory
-    mode: 0750
-
 - name: user and group handling
   when:
     - node_exporter_system_user != "root"
@@ -131,25 +115,9 @@
         createhome: false
         home: /nonexistent
 
-- name: create install directory
-  ansible.builtin.file:
-    path: "{{ node_exporter_install_path }}"
-    state: directory
-    owner: "{{ node_exporter_system_user }}"
-    group: "{{ node_exporter_system_group }}"
-    mode: 0755
-
-- name: fix directory rights for {{ node_exporter_install_path | dirname }}
-  ansible.builtin.file:
-    path: "{{ node_exporter_install_path | dirname }}"
-    state: directory
-    owner: "{{ node_exporter_system_user }}"
-    group: "{{ node_exporter_system_group }}"
-    mode: 0755
-    recurse: true
-
 - name: merge node_exporter configuration between defaults and custom
   ansible.builtin.set_fact:
+    node_exporter_release: "{{ node_exporter_defaults_release | combine(node_exporter_release, recursive=True) }}"
     node_exporter_service: "{{ node_exporter_defaults_service | combine(node_exporter_service, recursive=True) }}"
     node_exporter_tls_server: "{{ node_exporter_defaults_tls_server | combine(node_exporter_tls_server, recursive=True) }}"
     node_exporter_http_server: "{{ node_exporter_defaults_http_server | combine(node_exporter_http_server, recursive=True) }}"

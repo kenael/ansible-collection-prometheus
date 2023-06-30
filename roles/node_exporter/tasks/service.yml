@@ -1,6 +1,6 @@
 ---
 
-- name: restart node_exporter if needed
+- name: flush handlers
   ansible.builtin.meta: flush_handlers
 
 - name: ensure node_exporter is enabled on boot

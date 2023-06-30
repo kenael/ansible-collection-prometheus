@@ -1,66 +1,101 @@
 ---
 
-- name: checksum
-  become: false
-  delegate_to: localhost
-  run_once: true
-  block:
-    - name: get checksum list
-      bodsch.scm.github_checksum:
-        project: prometheus
-        repository: node_exporter
-        checksum_file: sha256sums.txt
-        user: "{{ lookup('env', 'GH_USER') | default(omit) }}"
-        password: "{{ lookup('env', 'GH_TOKEN') | default(omit) }}"
-        architecture: "{{ ansible_architecture }}"
-        system: "{{ ansible_facts.system }}"
-        version: "v{{ node_exporter_version }}"
-      register: _latest_checksum
-
-    - name: define checksum for {{ go_arch }} architecture
-      ansible.builtin.set_fact:
-        __node_exporter_checksums: "{{ _latest_checksum.checksum }}"
-      when:
-        - _latest_checksum.rc == 0
-        - _latest_checksum.checksum is defined
-        - _latest_checksum.checksum | string | length > 0
-
-# - name: define checksum
-#   become: false
-#   delegate_to: localhost
-#   run_once: true
-#   block:
-#     - name: get checksum list
-#       ansible.builtin.set_fact:
-#         __node_exporter_checksums: "{{ lookup('url', 'https://github.com/prometheus/node_exporter/releases/download/v' + node_exporter_version + '/sha256sums.txt', wantlist=True) | list }}"
-#
-#     - name: get checksum for {{ go_arch }} architecture
-#       ansible.builtin.set_fact:
-#         __node_exporter_checksums: "{{ __node_exporter_checksums | node_exporter_checksum('linux', go_arch) }}"
-
-- name: download node_exporter binary archive
+- name: create download directory
   become: false
   delegate_to: "{{ node_exporter_delegate_to }}"
   run_once: "{{ 'false' if node_exporter_direct_download else 'true' }}"
-  ansible.builtin.get_url:
-    url: "{{ node_exporter_release_download_url }}/download/v{{ node_exporter_version }}/node_exporter-{{ node_exporter_version }}.linux-amd64.tar.gz"
-    dest: "{{ node_exporter_local_tmp_directory }}/node_exporter-linux-amd64.tar.gz"
-    checksum: "sha256:{{ __node_exporter_checksums }}"
-    mode: 0660
-  register: _download_archive
-  until: _download_archive is succeeded
-  retries: 5
-  delay: 2
-  check_mode: false
+  ansible.builtin.file:
+    path: "{{ node_exporter_local_tmp_directory }}"
+    state: directory
+    mode: 0750
+
+- name: detect the downloaded node_exporter archive
+  become: false
+  delegate_to: "{{ node_exporter_delegate_to }}"
+  run_once: "{{ 'false' if node_exporter_direct_download else 'true' }}"
+  ansible.builtin.stat:
+    path: "{{ node_exporter_local_tmp_directory }}/{{ node_exporter_release.file }}"
+  register: stat_node_exporter_archive
+
+- name: download
+  when:
+    - stat_node_exporter_archive.stat is defined
+    - not stat_node_exporter_archive.stat.exists | default('false')
+  block:
+    - name: checksum
+      become: false
+      delegate_to: localhost
+      run_once: true
+      block:
+        - name: get checksum list
+          bodsch.scm.github_checksum:
+            project: prometheus
+            repository: node_exporter
+            checksum_file: sha256sums.txt
+            user: "{{ lookup('env', 'GH_USER') | default(omit) }}"
+            password: "{{ lookup('env', 'GH_TOKEN') | default(omit) }}"
+            architecture: "{{ ansible_architecture }}"
+            system: "{{ ansible_facts.system }}"
+            version: "v{{ node_exporter_version }}"
+          register: _latest_checksum
+
+        - name: define checksum for {{ system_architecture }} architecture
+          ansible.builtin.set_fact:
+            __node_exporter_checksum: "sha256:{{ _latest_checksum.checksum }}"
+          when:
+            - _latest_checksum.rc == 0
+            - _latest_checksum.checksum is defined
+            - _latest_checksum.checksum | string | length > 0
+
+    - name: download node_exporter binary archive
+      become: false
+      delegate_to: "{{ node_exporter_delegate_to }}"
+      run_once: "{{ 'false' if node_exporter_direct_download else 'true' }}"
+      ansible.builtin.get_url:
+        url: "{{ node_exporter_release.download_url }}/download/v{{ node_exporter_version }}/{{ node_exporter_release.file }}"
+        dest: "{{ node_exporter_local_tmp_directory }}/{{ node_exporter_release.file }}"
+        checksum: "{{ __node_exporter_checksum | default(omit) }}"
+        mode: 0640
+      register: _download_archive
+      until: _download_archive is succeeded
+      retries: 5
+      delay: 2
+      check_mode: false
+
+  rescue:
+    - name: delete download directory
+      become: false
+      delegate_to: "{{ node_exporter_delegate_to }}"
+      run_once: "{{ 'false' if node_exporter_direct_download else 'true' }}"
+      ansible.builtin.file:
+        path: "{{ node_exporter_local_tmp_directory }}"
+        state: absent
+
+    - name: exit with fail
+      ansible.builtin.fail:
+        msg: A serious error occurred when downloading the archive.
+
+- name: detect extracted binary
+  become: false
+  delegate_to: "{{ node_exporter_delegate_to }}"
+  run_once: "{{ 'false' if node_exporter_direct_download else 'true' }}"
+  ansible.builtin.stat:
+    path: "{{ node_exporter_local_tmp_directory }}/{{ node_exporter_release.binary }}"
+  register: stat_node_exporter_binary
 
 - name: extract node_exporter archive
   become: false
   delegate_to: "{{ node_exporter_delegate_to }}"
   run_once: "{{ 'false' if node_exporter_direct_download else 'true' }}"
   ansible.builtin.unarchive:
-    src: "{{ node_exporter_local_tmp_directory }}/node_exporter-linux-amd64.tar.gz"
-    dest: "{{ node_exporter_local_tmp_directory }}"
+    src: "{{ node_exporter_local_tmp_directory }}/{{ node_exporter_release.file }}"
+    dest: "{{ node_exporter_local_tmp_directory }}/"
     copy: false
-  register: _extract_archive
+    extra_opts:
+      - --strip-components=1
+  when:
+    - stat_node_exporter_binary.stat is defined
+    - not stat_node_exporter_binary.stat.exists | default('false')
 
 ...
+

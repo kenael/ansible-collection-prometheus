@@ -5,13 +5,9 @@
 
 - name: download archive
   ansible.builtin.include_tasks: download.yml
-  when:
-    - not stat_node_exporter_binary.stat.exists
 
 - name: install
   ansible.builtin.include_tasks: install.yml
-  when:
-    - not stat_node_exporter_binary.stat.exists
 
 - name: configure
   ansible.builtin.include_tasks: configure.yml
