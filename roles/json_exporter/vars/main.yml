@@ -2,7 +2,7 @@
 
 json_exporter_main_version: "{{ json_exporter_version[0:3] }}"
 
-json_exporter_install_path: /usr/local/bin/json_exporter/{{ json_exporter_version }}
+json_exporter_install_path: /usr/local/opt/json_exporter/{{ json_exporter_version }}
 
 json_exporter_delegate_to: localhost
 

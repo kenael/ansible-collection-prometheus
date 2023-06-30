@@ -17,7 +17,7 @@ This ansible role installs and configure [json_exporter](https://github.com/prom
 If `latest` is set for `json_exporter_version`, the role tries to install the latest release version.  
 **Please use this with caution, as incompatibilities between releases may occur!**
 
-The binaries are installed below `/usr/local/bin/json_exporter/${json_exporter_version}` and later linked to `/usr/bin`. 
+The binaries are installed below `/usr/local/opt/json_exporter/${json_exporter_version}` and later linked to `/usr/bin`. 
 This should make it possible to downgrade relatively safely.
 
 The json_exporter archive is stored on the Ansible controller, unpacked and then the binaries are copied to the target system.
