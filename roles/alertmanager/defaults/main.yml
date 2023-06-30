@@ -2,7 +2,7 @@
 
 alertmanager_version: 0.25.0
 
-alertmanager_release_download_url: https://github.com/prometheus/alertmanager/releases
+# alertmanager_release_download_url: https://github.com/prometheus/alertmanager/releases
 
 alertmanager_system_user: alertmanager
 alertmanager_system_group: alertmanager
@@ -12,6 +12,8 @@ alertmanager_data_dir: /var/lib/alertmanager
 alertmanager_enable_experimental: false
 
 alertmanager_direct_download: false
+
+alertmanager_release: {}
 
 alertmanager_amtool: {}
 

@@ -117,6 +117,7 @@
 
 - name: merge alertmanager configuration between defaults and custom
   ansible.builtin.set_fact:
+    alertmanager_release: "{{ alertmanager_defaults_release | combine(alertmanager_release, recursive=True) }}"
     alertmanager_service: "{{ alertmanager_defaults_service | combine(alertmanager_service, recursive=True) }}"
     alertmanager_global: "{{ alertmanager_defaults_global | combine(alertmanager_global, recursive=True) }}"
     alertmanager_receivers: "{{ alertmanager_defaults_receivers | combine(alertmanager_receivers, recursive=True) }}"
