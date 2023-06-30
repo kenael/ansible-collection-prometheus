@@ -2,7 +2,7 @@
 
 nginx_exporter_main_version: "{{ nginx_exporter_version[0:3] }}"
 
-nginx_exporter_install_path: /usr/local/bin/nginx_exporter/{{ nginx_exporter_version }}
+nginx_exporter_install_path: /usr/local/opt/nginx_exporter/{{ nginx_exporter_version }}
 
 nginx_exporter_delegate_to: localhost
 
