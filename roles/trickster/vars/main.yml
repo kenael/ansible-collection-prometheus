@@ -2,7 +2,7 @@
 
 trickster_main_version: "{{ trickster_version[0:3] }}"
 
-trickster_install_path: /usr/local/bin/trickster/{{ trickster_version }}
+trickster_install_path: /usr/local/opt/trickster/{{ trickster_version }}
 
 trickster_delegate_to: localhost
 
