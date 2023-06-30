@@ -6,7 +6,7 @@
     state: directory
     owner: root
     group: "{{ node_exporter_system_group }}"
-    mode: 0770
+    mode: 0775
 
 - name: create node_exporter configuration
   ansible.builtin.template:

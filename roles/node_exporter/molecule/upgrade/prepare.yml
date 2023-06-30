@@ -29,6 +29,15 @@
       ansible.builtin.package:
         update_cache: true
 
+    - name: install python3-passlib
+      become: true
+      ansible.builtin.package:
+        name:
+          - python3-passlib
+        state: present
+      when:
+        - ansible_os_family | lower == 'debian'
+
     - name: environment
       ansible.builtin.debug:
         msg:

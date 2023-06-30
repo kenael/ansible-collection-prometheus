@@ -10,3 +10,4 @@ pytest-testinfra
 tox
 tox-gh-actions
 yamllint
+passlib[bcrypt]
