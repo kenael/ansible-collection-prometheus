@@ -2,7 +2,7 @@
 
 mysql_exporter_main_version: "{{ mysql_exporter_version[0:3] }}"
 
-mysql_exporter_install_path: /usr/local/bin/mysql_exporter/{{ mysql_exporter_version }}
+mysql_exporter_install_path: /usr/local/opt/mysql_exporter/{{ mysql_exporter_version }}
 
 mysql_exporter_delegate_to: localhost
 

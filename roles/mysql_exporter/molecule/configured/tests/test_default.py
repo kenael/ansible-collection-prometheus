@@ -106,7 +106,7 @@ def local_facts(host):
 
 @pytest.mark.parametrize("directories", [
     "/etc/mysql_exporter",
-    "/usr/local/bin/mysql_exporter"
+    "/usr/local/opt/mysql_exporter"
 ])
 def test_directories(host, directories):
     d = host.file(directories)

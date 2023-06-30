@@ -18,7 +18,7 @@ Ansible role to install and configure [mysqld_exporter](https://github.com/prome
 If `latest` is set for `mysql_exporter_version`, the role tries to install the latest release version.  
 **Please use this with caution, as incompatibilities between releases may occur!**
 
-The binaries are installed below `/usr/local/bin/mysql_exporter/${mysql_exporter_version}` and later linked to `/usr/bin`. 
+The binaries are installed below `/usr/local/opt/mysql_exporter/${mysql_exporter_version}` and later linked to `/usr/bin`. 
 This should make it possible to downgrade relatively safely.
 
 The downloaded archive is stored on the Ansible controller, unpacked and then the binaries are copied to the target system.
