@@ -20,10 +20,6 @@
         - default.yaml
       skip: true
 
-- name: update package cache
-  ansible.builtin.package:
-    update_cache: true
-
 - name: define delegate instance for download handling
   ansible.builtin.set_fact:
     prometheus_delegate_to: "{{ ansible_host }}"
@@ -99,19 +95,6 @@
 - name: flush handlers
   ansible.builtin.meta: flush_handlers
 
-- name: detect installed prometheus binary
-  ansible.builtin.stat:
-    path: "{{ prometheus_install_path }}/prometheus"
-  register: stat_prometheus_binary
-
-- name: create download directory
-  become: false
-  delegate_to: "{{ prometheus_delegate_to }}"
-  ansible.builtin.file:
-    path: "{{ prometheus_local_tmp_directory }}"
-    state: directory
-    mode: 0750
-
 - name: user and group handling
   when:
     - prometheus_system_user != "root"
@@ -132,25 +115,9 @@
         createhome: false
         home: /nonexistent
 
-- name: create install directory
-  ansible.builtin.file:
-    path: "{{ prometheus_install_path }}"
-    state: directory
-    owner: "{{ prometheus_system_user }}"
-    group: "{{ prometheus_system_group }}"
-    mode: 0755
-
-- name: fix directory rights for {{ prometheus_install_path | dirname }}
-  ansible.builtin.file:
-    path: "{{ prometheus_install_path | dirname }}"
-    state: directory
-    owner: "{{ prometheus_system_user }}"
-    group: "{{ prometheus_system_group }}"
-    mode: 0755
-    recurse: true
-
 - name: merge prometheus configuration between defaults and custom
   ansible.builtin.set_fact:
+    prometheus_release: "{{ prometheus_defaults_release | combine(prometheus_release, recursive=True) }}"
     prometheus_service: "{{ prometheus_defaults_service | combine(prometheus_service, recursive=True) }}"
     prometheus_global: "{{ prometheus_defaults_global | combine(prometheus_global, recursive=True) }}"
     prometheus_alerting: "{{ prometheus_defaults_alerting | combine(prometheus_alerting, recursive=True) }}"
