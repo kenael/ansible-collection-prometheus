@@ -2,7 +2,7 @@
 
 pushgateway_main_version: "{{ pushgateway_version[0:3] }}"
 
-pushgateway_install_path: /usr/local/bin/pushgateway/{{ pushgateway_version }}
+pushgateway_install_path: /usr/local/opt/pushgateway/{{ pushgateway_version }}
 
 pushgateway_delegate_to: localhost
 

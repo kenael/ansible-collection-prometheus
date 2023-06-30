@@ -17,7 +17,7 @@ Ansible role to setup [pushgateway](https://github.com/prometheus/pushgateway).
 If `latest` is set for `pushgateway_version`, the role tries to install the latest release version.  
 **Please use this with caution, as incompatibilities between releases may occur!**
 
-The binaries are installed below `/usr/local/bin/pushgateway/${pushgateway_version}` and later linked to `/usr/bin`. 
+The binaries are installed below `/usr/local/opt/pushgateway/${pushgateway_version}` and later linked to `/usr/bin`. 
 This should make it possible to downgrade relatively safely.
 
 The downloaded archive is stored on the Ansible controller, unpacked and then the binaries are copied to the target system.

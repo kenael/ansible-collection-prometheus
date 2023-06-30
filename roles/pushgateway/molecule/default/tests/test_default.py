@@ -112,7 +112,7 @@ def test_version(host, get_vars):
     """
     version = local_facts(host).get("version")
 
-    version_dir = f"/usr/local/bin/pushgateway/{version}"
+    version_dir = f"/usr/local/opt/pushgateway/{version}"
     current_link = "/usr/bin/pushgateway"
 
     print(version_dir)
