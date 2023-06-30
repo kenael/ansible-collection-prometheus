@@ -2,7 +2,7 @@
 
 alertmanager_main_version: "{{ alertmanager_version[0:3] }}"
 
-alertmanager_install_path: /usr/local/bin/alertmanager/{{ alertmanager_version }}
+alertmanager_install_path: /usr/local/opt/alertmanager/{{ alertmanager_version }}
 
 alertmanager_delegate_to: localhost
 

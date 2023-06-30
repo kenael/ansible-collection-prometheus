@@ -17,7 +17,7 @@ Ansible role to install and configure [alertmanager](https://github.com/promethe
 If `latest` is set for `alertmanager_version`, the role tries to install the latest release version.  
 **Please use this with caution, as incompatibilities between releases may occur!**
 
-The binaries are installed below `/usr/local/bin/alertmanager/${alertmanager_version}` and later linked to `/usr/bin`. 
+The binaries are installed below `/usr/local/opt/alertmanager/${alertmanager_version}` and later linked to `/usr/bin`. 
 This should make it possible to downgrade relatively safely.
 
 The alertmanager archive is stored on the Ansible controller, unpacked and then the binaries are copied to the target system.
