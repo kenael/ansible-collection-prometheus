@@ -13,8 +13,8 @@ User              = {{ json_exporter_system_user }}
 Group             = {{ json_exporter_system_group }}
 
 ExecReload        = /bin/kill -HUP $MAINPID
-ExecStartPre      = /usr/bin/json_exporter --config.check --log.level debug --config.file {{ json_exporter_service.config.file }}
-ExecStart         = /usr/bin/json_exporter $OPTIONS
+ExecStartPre      = /usr/bin/{{ json_exporter_release.binary }} --config.check --log.level debug --config.file {{ json_exporter_service.config.file }}
+ExecStart         = /usr/bin/{{ json_exporter_release.binary }} $OPTIONS
 
 SyslogIdentifier  = json_exporter
 Restart           = always

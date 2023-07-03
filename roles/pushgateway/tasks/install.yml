@@ -13,7 +13,7 @@
   delegate_to: "{{ pushgateway_delegate_to }}"
   run_once: "{{ 'false' if pushgateway_direct_download else 'true' }}"
   ansible.builtin.stat:
-    path: "{{ pushgateway_local_tmp_directory }}/pushgateway"
+    path: "{{ pushgateway_local_tmp_directory }}/{{ pushgateway_release.binary }}"
   register: stat_file_binary
 
 - name: fail when extracted binary are missing
@@ -24,12 +24,12 @@
 
 - name: detect installed pushgateway binary
   ansible.builtin.stat:
-    path: "{{ pushgateway_install_path }}/pushgateway"
+    path: "{{ pushgateway_install_path }}/{{ pushgateway_release.binary }}"
   register: stat_pushgateway_binary
 
 - name: detect activated pushgateway binary
   ansible.builtin.stat:
-    path: /usr/bin/pushgateway
+    path: /usr/bin/{{ pushgateway_release.binary }}
   register: stat_pushgateway_activated
 
 - name: install and activate pushgateway
@@ -43,8 +43,8 @@
       block:
         - name: propagate pushgateway binary
           ansible.builtin.copy:
-            src: "{{ pushgateway_local_tmp_directory }}/pushgateway"
-            dest: "{{ pushgateway_install_path }}/pushgateway"
+            src: "{{ pushgateway_local_tmp_directory }}/{{ pushgateway_release.binary }}"
+            dest: "{{ pushgateway_install_path }}/{{ pushgateway_release.binary }}"
             mode: 0755
             owner: "{{ pushgateway_system_user }}"
             group: "{{ pushgateway_system_group }}"
@@ -52,15 +52,15 @@
 
         - name: make files executable
           ansible.builtin.file:
-            path: "{{ pushgateway_install_path }}/pushgateway"
+            path: "{{ pushgateway_install_path }}/{{ pushgateway_release.binary }}"
             mode: 0755
             owner: "{{ pushgateway_system_user }}"
             group: "{{ pushgateway_system_group }}"
 
         - name: create link to binary
           ansible.builtin.file:
-            src: "{{ pushgateway_install_path }}/pushgateway"
-            dest: /usr/bin/pushgateway
+            src: "{{ pushgateway_install_path }}/{{ pushgateway_release.binary }}"
+            dest: /usr/bin/{{ pushgateway_release.binary }}
             state: link
             force: true
             follow: false

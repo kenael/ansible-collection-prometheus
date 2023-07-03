@@ -16,7 +16,7 @@ Group            = {{ trickster_system_group }}
 ExecStartPre     = /usr/bin/trickster $OPTIONS --log-level debug --validate-config
 
 ExecReload       = /bin/kill -HUP $MAINPID
-ExecStart        = /usr/bin/trickster $OPTIONS
+ExecStart        = /usr/bin/{{ trickster_release.binary }} $OPTIONS
 
 LimitNOFILE      = 65000
 SyslogIdentifier = trickster

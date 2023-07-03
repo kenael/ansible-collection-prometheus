@@ -24,12 +24,12 @@
 
 - name: detect installed trickster binary
   ansible.builtin.stat:
-    path: "{{ trickster_install_path }}/trickster"
+    path: "{{ trickster_install_path }}/{{ trickster_release.binary }}"
   register: stat_trickster_binary
 
 - name: detect activated trickster binary
   ansible.builtin.stat:
-    path: /usr/bin/trickster
+    path: /usr/bin/{{ trickster_release.binary }}
   register: stat_trickster_activated
 
 - name: install and activate trickster
@@ -44,7 +44,7 @@
         - name: propagate trickster binary
           ansible.builtin.copy:
             src: "{{ trickster_local_tmp_directory }}/trickster-{{ trickster_version }}/bin/trickster-{{ trickster_version }}.{{ ansible_system | lower }}-{{ system_architecture }}"
-            dest: "{{ trickster_install_path }}/trickster"
+            dest: "{{ trickster_install_path }}/{{ trickster_release.binary }}"
             mode: 0755
             owner: "{{ trickster_system_user }}"
             group: "{{ trickster_system_group }}"
@@ -52,15 +52,15 @@
 
         - name: make files executable
           ansible.builtin.file:
-            path: "{{ trickster_install_path }}/trickster"
+            path: "{{ trickster_install_path }}/{{ trickster_release.binary }}"
             mode: 0755
             owner: "{{ trickster_system_user }}"
             group: "{{ trickster_system_group }}"
 
         - name: create link to binary
           ansible.builtin.file:
-            src: "{{ trickster_install_path }}/trickster"
-            dest: /usr/bin/trickster
+            src: "{{ trickster_install_path }}/{{ trickster_release.binary }}"
+            dest: /usr/bin/{{ trickster_release.binary }}
             state: link
             force: true
             follow: false

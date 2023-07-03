@@ -83,4 +83,27 @@
     - name: exit with fail
       ansible.builtin.fail:
         msg: A serious error occurred when downloading the archive.
+
+- name: detect extracted binary
+  become: false
+  delegate_to: "{{ alertmanager_delegate_to }}"
+  run_once: "{{ 'false' if alertmanager_direct_download else 'true' }}"
+  ansible.builtin.stat:
+    path: "{{ alertmanager_local_tmp_directory }}/{{ alertmanager_release.binary }}"
+  register: stat_alertmanager_binary
+
+- name: extract alertmanager archive
+  become: false
+  delegate_to: "{{ alertmanager_delegate_to }}"
+  run_once: "{{ 'false' if alertmanager_direct_download else 'true' }}"
+  ansible.builtin.unarchive:
+    src: "{{ alertmanager_local_tmp_directory }}/{{ alertmanager_release.file }}"
+    dest: "{{ alertmanager_local_tmp_directory }}/"
+    copy: false
+    extra_opts:
+      - --strip-components=1
+  when:
+    - stat_alertmanager_binary.stat is defined
+    - not stat_alertmanager_binary.stat.exists | default('false')
+
 ...

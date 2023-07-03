@@ -13,7 +13,7 @@
   delegate_to: "{{ blackbox_exporter_delegate_to }}"
   run_once: "{{ 'false' if blackbox_exporter_direct_download else 'true' }}"
   ansible.builtin.stat:
-    path: "{{ blackbox_exporter_local_tmp_directory }}/blackbox_exporter"
+    path: "{{ blackbox_exporter_local_tmp_directory }}/{{ blackbox_exporter_release.binary }}"
   register: stat_file_binary
 
 - name: fail when extracted binary are missing
@@ -24,12 +24,12 @@
 
 - name: detect installed blackbox_exporter binary
   ansible.builtin.stat:
-    path: "{{ blackbox_exporter_install_path }}/blackbox_exporter"
+    path: "{{ blackbox_exporter_install_path }}/{{ blackbox_exporter_release.binary }}"
   register: stat_blackbox_exporter_binary
 
 - name: detect activated blackbox_exporter binary
   ansible.builtin.stat:
-    path: /usr/bin/blackbox_exporter
+    path: /usr/bin/{{ blackbox_exporter_release.binary }}
   register: stat_blackbox_exporter_activated
 
 - name: install and activate blackbox_exporter
@@ -43,8 +43,8 @@
       block:
         - name: propagate blackbox_exporter binary
           ansible.builtin.copy:
-            src: "{{ blackbox_exporter_local_tmp_directory }}/blackbox_exporter"
-            dest: "{{ blackbox_exporter_install_path }}/blackbox_exporter"
+            src: "{{ blackbox_exporter_local_tmp_directory }}/{{ blackbox_exporter_release.binary }}"
+            dest: "{{ blackbox_exporter_install_path }}/{{ blackbox_exporter_release.binary }}"
             mode: 0755
             owner: "{{ blackbox_exporter_system_user }}"
             group: "{{ blackbox_exporter_system_group }}"
@@ -52,14 +52,14 @@
 
         - name: make files executable
           ansible.builtin.file:
-            path: "{{ blackbox_exporter_install_path }}/blackbox_exporter"
+            path: "{{ blackbox_exporter_install_path }}/{{ blackbox_exporter_release.binary }}"
             mode: 0755
             owner: "{{ blackbox_exporter_system_user }}"
             group: "{{ blackbox_exporter_system_group }}"
 
         - name: ensure blackbox exporter binary has cap_net_raw capability
           capabilities:
-            path: "{{ blackbox_exporter_install_path }}/blackbox_exporter"
+            path: "{{ blackbox_exporter_install_path }}/{{ blackbox_exporter_release.binary }}"
             capability: cap_net_raw+ep
             state: present
           when:
@@ -67,8 +67,8 @@
 
         - name: create link to binary
           ansible.builtin.file:
-            src: "{{ blackbox_exporter_install_path }}/blackbox_exporter"
-            dest: /usr/bin/blackbox_exporter
+            src: "{{ blackbox_exporter_install_path }}/{{ blackbox_exporter_release.binary }}"
+            dest: /usr/bin/{{ blackbox_exporter_release.binary }}
             state: link
             force: true
             follow: false

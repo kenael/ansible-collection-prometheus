@@ -35,6 +35,7 @@ blackbox_exporter_defaults_directory: /etc/default
 blackbox_exporter_defaults_release:
   download_url: https://github.com/prometheus/blackbox_exporter/releases
   file: blackbox_exporter-{{ blackbox_exporter_version }}.{{ ansible_system | lower }}-{{ system_architecture }}.tar.gz
+  binary: blackbox_exporter
 
 go_arch_map:
   i386: '386'

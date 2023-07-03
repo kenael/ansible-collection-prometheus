@@ -29,6 +29,7 @@ json_exporter_defaults_directory: /etc/default
 json_exporter_defaults_release:
   download_url: https://github.com/prometheus-community/json_exporter/releases
   file: json_exporter-{{ json_exporter_version }}.{{ ansible_system | lower }}-{{ system_architecture }}.tar.gz
+  binary: json_exporter
 
 go_arch_map:
   i386: '386'

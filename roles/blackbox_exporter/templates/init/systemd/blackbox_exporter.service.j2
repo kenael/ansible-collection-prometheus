@@ -13,8 +13,8 @@ User              = {{ blackbox_exporter_system_user }}
 Group             = {{ blackbox_exporter_system_group }}
 
 ExecReload        = /bin/kill -HUP $MAINPID
-ExecStartPre      = /usr/bin/blackbox_exporter --config.file {{ blackbox_exporter_service.config.file }} --config.check
-ExecStart         = /usr/bin/blackbox_exporter $OPTIONS
+ExecStartPre      = /usr/bin/{{ blackbox_exporter_release.binary }} --config.file {{ blackbox_exporter_service.config.file }} --config.check
+ExecStart         = /usr/bin/{{ blackbox_exporter_release.binary }} $OPTIONS
 
 SyslogIdentifier  = blackbox_exporter
 Restart           = always

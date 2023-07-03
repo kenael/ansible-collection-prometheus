@@ -14,7 +14,7 @@ User             = {{ pushgateway_system_user }}
 Group            = {{ pushgateway_system_group }}
 
 ExecReload       = /bin/kill -HUP $MAINPID
-ExecStart        = /usr/bin/pushgateway $OPTIONS
+ExecStart        = /usr/bin/{{ pushgateway_release.binary }} $OPTIONS
 
 LimitNOFILE      = 65000
 SyslogIdentifier = pushgateway

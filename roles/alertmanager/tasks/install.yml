@@ -24,12 +24,12 @@
 
 - name: detect installed alertmanager binary
   ansible.builtin.stat:
-    path: "{{ alertmanager_install_path }}/alertmanager"
+    path: "{{ alertmanager_install_path }}/{{ alertmanager_release.binary }}"
   register: stat_alertmanager_binary
 
 - name: detect activated alertmanager binary
   ansible.builtin.stat:
-    path: /usr/bin/alertmanager
+    path: /usr/bin/{{ alertmanager_release.binary }}
   register: stat_alertmanager_activated
 
 - name: install and activate alertmanager
@@ -50,7 +50,7 @@
             group: "{{ alertmanager_system_group }}"
             remote_src: "{{ 'true' if alertmanager_direct_download else 'false' }}"
           loop:
-            - alertmanager
+            - "{{ alertmanager_release.binary }}"
             - amtool
 
         - name: make files executable
@@ -60,7 +60,7 @@
             owner: "{{ alertmanager_system_user }}"
             group: "{{ alertmanager_system_group }}"
           loop:
-            - alertmanager
+            - "{{ alertmanager_release.binary }}"
             - amtool
 
         - name: create link to binary
@@ -71,7 +71,7 @@
             force: true
             follow: false
           loop:
-            - alertmanager
+            - "{{ alertmanager_release.binary }}"
             - amtool
           notify:
             - restart alertmanager

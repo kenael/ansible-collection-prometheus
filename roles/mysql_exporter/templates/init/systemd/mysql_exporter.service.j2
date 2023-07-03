@@ -14,7 +14,7 @@ User              = {{ mysql_exporter_system_user }}
 Group             = {{ mysql_exporter_system_group }}
 
 ExecReload        = /bin/kill -HUP $MAINPID
-ExecStart         = /usr/bin/mysql_exporter $OPTIONS
+ExecStart         = /usr/bin/{{ mysql_exporter_release.binary }} $OPTIONS
 
 SyslogIdentifier  = mysql_exporter
 Restart           = always

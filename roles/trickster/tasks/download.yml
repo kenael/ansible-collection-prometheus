@@ -62,17 +62,6 @@
       delay: 2
       check_mode: false
 
-    - name: extract trickster archive
-      become: false
-      delegate_to: "{{ trickster_delegate_to }}"
-      run_once: "{{ 'false' if trickster_direct_download else 'true' }}"
-      ansible.builtin.unarchive:
-        src: "{{ trickster_local_tmp_directory }}/{{ trickster_release.file }}"
-        dest: "{{ trickster_local_tmp_directory }}/"
-        copy: false
-        extra_opts:
-          - --strip-components=1
-
   rescue:
     - name: delete download directory
       become: false
@@ -85,5 +74,27 @@
     - name: exit with fail
       ansible.builtin.fail:
         msg: A serious error occurred when downloading the archive.
+
+- name: detect extracted binary
+  become: false
+  delegate_to: "{{ trickster_delegate_to }}"
+  run_once: "{{ 'false' if trickster_direct_download else 'true' }}"
+  ansible.builtin.stat:
+    path: "{{ trickster_local_tmp_directory }}/{{ trickster_release.binary }}"
+  register: stat_trickster_binary
+
+- name: extract trickster archive
+  become: false
+  delegate_to: "{{ trickster_delegate_to }}"
+  run_once: "{{ 'false' if trickster_direct_download else 'true' }}"
+  ansible.builtin.unarchive:
+    src: "{{ trickster_local_tmp_directory }}/{{ trickster_release.file }}"
+    dest: "{{ trickster_local_tmp_directory }}/"
+    copy: false
+    extra_opts:
+      - --strip-components=1
+  when:
+    - stat_trickster_binary.stat is defined
+    - not stat_trickster_binary.stat.exists | default('false')
 
 ...

@@ -1,0 +1,65 @@
+---
+
+- name: create env directory for configurations
+  file:
+    state: directory
+    path: "{{ node_exporter_config_dir }}/collector-scripts"
+    owner: "{{ node_exporter_system_user }}"
+    group: "{{ node_exporter_system_group }}"
+    mode: 0750
+
+- name: create env directory for configurations
+  file:
+    state: directory
+    path: "{{ node_exporter_config_dir }}/.env"
+    owner: "{{ node_exporter_system_user }}"
+    group: "{{ node_exporter_system_group }}"
+    mode: 0750
+
+- name: create configuration for solr_response
+  template:
+    src: solr_response.rc.j2
+    dest: "{{ node_exporter_config_dir }}/.env/solr_response.rc"
+    owner: "{{ node_exporter_system_user }}"
+    group: "{{ node_exporter_system_group }}"
+    mode: 0640
+  when:
+    - node_exporter_collector_scripts | regex_search('solr_response.sh')
+    - node_exporter_solr_response.url is defined
+    - node_exporter_solr_response.url | string | length > 0
+
+- name: copy text-collector scripts
+  copy:
+    src: "{{ item }}"
+    dest: "{{ node_exporter_config_dir }}/collector-scripts/{{ item }}"
+    owner: "{{ node_exporter_system_user }}"
+    group: "{{ node_exporter_system_group }}"
+    mode: 0750
+  loop:
+    "{{ node_exporter_collector_scripts }}"
+
+- name: create crontab entry for apt.sh
+  cron:
+    name: node_exporter_text-collector_apt
+    cron_file: node_exporter_text-collector_apt
+    user: "{{ node_exporter_system_user }}"
+    minute: "0"
+    hour: "1"
+    job: "{{ node_exporter_config_dir }}/collector-scripts/apt.sh > {{ node_exporter_textfile_dir }}/apt.prom"
+  when:
+    - node_exporter_collector_scripts | regex_search('apt.sh')
+
+- name: create crontab entry for solr_response.sh
+  cron:
+    name: node_exporter_text-collector_solr_response
+    cron_file: node_exporter_text-collector_solr_response
+    user: "{{ node_exporter_system_user }}"
+    minute: "*/30"
+    # hour: "*"
+    job: "{{ node_exporter_config_dir }}/collector-scripts/solr_response.sh > {{ node_exporter_textfile_dir }}/solr_response.prom"
+  when:
+    - node_exporter_collector_scripts | regex_search('solr_response.sh')
+    - node_exporter_solr_response.url is defined
+    - node_exporter_solr_response.url | string | length > 0
+
+...

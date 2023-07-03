@@ -13,7 +13,7 @@ User             = {{ alertmanager_system_user }}
 Group            = {{ alertmanager_system_group }}
 
 ExecStartPre     = /usr/bin/amtool check-config --verbose {{ alertmanager_config_dir }}/alertmanager.yml
-ExecStart        = /usr/bin/alertmanager $OPTIONS
+ExecStart        = /usr/bin/{{ alertmanager_release.binary }} $OPTIONS
 ExecReload       = /bin/kill -HUP $MAINPID
 
 SyslogIdentifier = alertmanager

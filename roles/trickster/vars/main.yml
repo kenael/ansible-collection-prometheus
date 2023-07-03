@@ -275,6 +275,7 @@ trickster_defaults_directory: /etc/default
 trickster_defaults_release:
   download_url: https://github.com/tricksterproxy/trickster/releases
   file: trickster-{{ trickster_version }}.tar.gz
+  binary: trickster
 
 go_arch_map:
   x86_64: 'amd64'

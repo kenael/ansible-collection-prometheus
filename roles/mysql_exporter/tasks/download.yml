@@ -62,17 +62,6 @@
       delay: 2
       check_mode: false
 
-    - name: extract mysql_exporter archive
-      become: false
-      delegate_to: "{{ mysql_exporter_delegate_to }}"
-      run_once: "{{ 'false' if mysql_exporter_direct_download else 'true' }}"
-      ansible.builtin.unarchive:
-        src: "{{ mysql_exporter_local_tmp_directory }}/{{ mysql_exporter_release.file }}"
-        dest: "{{ mysql_exporter_local_tmp_directory }}/"
-        copy: false
-        extra_opts:
-          - --strip-components=1
-
   rescue:
     - name: delete download directory
       become: false
@@ -85,5 +74,27 @@
     - name: exit with fail
       ansible.builtin.fail:
         msg: A serious error occurred when downloading the archive.
+
+- name: detect extracted binary
+  become: false
+  delegate_to: "{{ mysql_exporter_delegate_to }}"
+  run_once: "{{ 'false' if mysql_exporter_direct_download else 'true' }}"
+  ansible.builtin.stat:
+    path: "{{ mysql_exporter_local_tmp_directory }}/{{ mysql_exporter_release.binary }}"
+  register: stat_mysql_exporter_binary
+
+- name: extract mysql_exporter archive
+  become: false
+  delegate_to: "{{ mysql_exporter_delegate_to }}"
+  run_once: "{{ 'false' if mysql_exporter_direct_download else 'true' }}"
+  ansible.builtin.unarchive:
+    src: "{{ mysql_exporter_local_tmp_directory }}/{{ mysql_exporter_release.file }}"
+    dest: "{{ mysql_exporter_local_tmp_directory }}/"
+    copy: false
+    extra_opts:
+      - --strip-components=1
+  when:
+    - stat_mysql_exporter_binary.stat is defined
+    - not stat_mysql_exporter_binary.stat.exists | default('false')
 
 ...

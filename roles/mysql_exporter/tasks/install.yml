@@ -24,12 +24,12 @@
 
 - name: detect installed mysql_exporter binary
   ansible.builtin.stat:
-    path: "{{ mysql_exporter_install_path }}/mysql_exporter"
+    path: "{{ mysql_exporter_install_path }}/{{ mysql_exporter_release.binary }}"
   register: stat_mysql_exporter_binary
 
 - name: detect activated mysql_exporter binary
   ansible.builtin.stat:
-    path: /usr/bin/mysql_exporter
+    path: /usr/bin/{{ mysql_exporter_release.binary }}
   register: stat_mysql_exporter_activated
 
 - name: install and activate mysql_exporter
@@ -43,8 +43,8 @@
       block:
         - name: propagate mysql_exporter binary
           ansible.builtin.copy:
-            src: "{{ mysql_exporter_local_tmp_directory }}/mysqld_exporter"
-            dest: "{{ mysql_exporter_install_path }}/mysql_exporter"
+            src: "{{ mysql_exporter_local_tmp_directory }}/{{ mysql_exporter_release.binary }}"
+            dest: "{{ mysql_exporter_install_path }}/{{ mysql_exporter_release.binary }}"
             mode: 0755
             owner: "{{ mysql_exporter_system_user }}"
             group: "{{ mysql_exporter_system_group }}"
@@ -52,15 +52,15 @@
 
         - name: make files executable
           ansible.builtin.file:
-            path: "{{ mysql_exporter_install_path }}/mysql_exporter"
+            path: "{{ mysql_exporter_install_path }}/{{ mysql_exporter_release.binary }}"
             mode: 0755
             owner: "{{ mysql_exporter_system_user }}"
             group: "{{ mysql_exporter_system_group }}"
 
         - name: create link to binary
           ansible.builtin.file:
-            src: "{{ mysql_exporter_install_path }}/mysql_exporter"
-            dest: /usr/bin/mysql_exporter
+            src: "{{ mysql_exporter_install_path }}/{{ mysql_exporter_release.binary }}"
+            dest: /usr/bin/{{ mysql_exporter_release.binary }}
             state: link
             force: true
             follow: false

@@ -62,7 +62,6 @@
       delay: 2
       check_mode: false
 
-
   rescue:
     - name: delete download directory
       become: false

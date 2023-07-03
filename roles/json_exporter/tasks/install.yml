@@ -13,7 +13,7 @@
   delegate_to: "{{ json_exporter_delegate_to }}"
   run_once: "{{ 'false' if json_exporter_direct_download else 'true' }}"
   ansible.builtin.stat:
-    path: "{{ json_exporter_local_tmp_directory }}/json_exporter"
+    path: "{{ json_exporter_local_tmp_directory }}/{{ json_exporter_release.binary }}"
   register: stat_file_binary
 
 - name: fail when extracted binary are missing
@@ -24,12 +24,12 @@
 
 - name: detect installed json_exporter binary
   ansible.builtin.stat:
-    path: "{{ json_exporter_install_path }}/json_exporter"
+    path: "{{ json_exporter_install_path }}/{{ json_exporter_release.binary }}"
   register: stat_json_exporter_binary
 
 - name: detect activated json_exporter binary
   ansible.builtin.stat:
-    path: /usr/bin/json_exporter
+    path: /usr/bin/{{ json_exporter_release.binary }}
   register: stat_json_exporter_activated
 
 - name: install and activate json_exporter
@@ -43,8 +43,8 @@
       block:
         - name: propagate json_exporter binary
           ansible.builtin.copy:
-            src: "{{ json_exporter_local_tmp_directory }}/json_exporter"
-            dest: "{{ json_exporter_install_path }}/json_exporter"
+            src: "{{ json_exporter_local_tmp_directory }}/{{ json_exporter_release.binary }}"
+            dest: "{{ json_exporter_install_path }}/{{ json_exporter_release.binary }}"
             mode: 0755
             owner: "{{ json_exporter_system_user }}"
             group: "{{ json_exporter_system_group }}"
@@ -52,14 +52,14 @@
 
         - name: make files executable
           ansible.builtin.file:
-            path: "{{ json_exporter_install_path }}/json_exporter"
+            path: "{{ json_exporter_install_path }}/{{ json_exporter_release.binary }}"
             mode: 0755
             owner: "{{ json_exporter_system_user }}"
             group: "{{ json_exporter_system_group }}"
 
         - name: ensure json exporter binary has cap_net_raw capability
           capabilities:
-            path: "{{ json_exporter_install_path }}/json_exporter"
+            path: "{{ json_exporter_install_path }}/{{ json_exporter_release.binary }}"
             capability: cap_net_raw+ep
             state: present
           when:
@@ -67,8 +67,8 @@
 
         - name: create link to binary
           ansible.builtin.file:
-            src: "{{ json_exporter_install_path }}/json_exporter"
-            dest: /usr/bin/json_exporter
+            src: "{{ json_exporter_install_path }}/{{ json_exporter_release.binary }}"
+            dest: /usr/bin/{{ json_exporter_release.binary }}
             state: link
             force: true
             follow: false

@@ -37,6 +37,7 @@ pushgateway_defaults_directory: /etc/default
 pushgateway_defaults_release:
   download_url: https://github.com/prometheus/pushgateway/releases/
   file: pushgateway-{{ pushgateway_version }}.{{ ansible_system | lower }}-{{ system_architecture }}.tar.gz
+  binary: pushgateway
 
 go_arch_map:
   x86_64: 'amd64'
