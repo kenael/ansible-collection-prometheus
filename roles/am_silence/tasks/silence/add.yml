@@ -1,0 +1,26 @@
+---
+
+- name: add alertmanager silence
+  tags:
+    - silence_add
+  block:
+    - name: create new silence
+      bodsch.prometheus.alertmanager_silence:
+        state: add
+        url: "{{ silence_alertmanager.url }}"
+        silence_downtime: "{{ silence_downtime }}"
+        comment: "{{ silence_comment }}"
+        matchers: "{{ silence_matchers }}"
+      register: silence_resp
+
+    - name: save active silence information
+      bodsch.core.facts:
+        name: silence
+        facts:
+          id: "{{ silence_resp.silence_id }}"
+          start: "{{ silence_resp.silence_start }}"
+          end: "{{ silence_resp.silence_end }}"
+      when:
+        - silence_resp.silence_id is defined
+
+...

@@ -1,6 +1,6 @@
 ---
 
-alertmanager_version: 0.23.0
+# alertmanager_version: 0.23.0
 
 alertmanager_service:
   log:

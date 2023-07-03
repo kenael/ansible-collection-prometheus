@@ -1,0 +1,10 @@
+---
+
+silence_dependencies:
+  - python3-requests
+  - python3-dateutil
+
+silence_start_datetime: ""
+silence_end_datetime: ""
+
+...

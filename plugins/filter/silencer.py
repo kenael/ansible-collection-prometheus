@@ -28,13 +28,18 @@ class FilterModule(object):
         add_minutes = add_time.get("minutes", 10)
         add_hours = add_time.get("hours", 0)
 
-        current_time = time.time()
-        end_time = current_time + add_minutes
-        current_date_time = datetime.datetime.utcfromtimestamp(current_time).isoformat()
-        end_date_time = datetime.datetime.utcfromtimestamp(end_time).isoformat()
+        current_date_time = datetime.datetime.now()
+
+        if add_hours > 0:
+            datetime_delta = datetime.timedelta(hours=add_hours)
+        elif add_minutes > 0:
+            datetime_delta = datetime.timedelta(minutes=add_minutes)
+
+        end_date_time = (current_date_time + datetime_delta).isoformat()
+        begin_date_time = current_date_time.isoformat()
 
         return dict(
-            begin = current_date_time,
+            begin = begin_date_time,
             end = end_date_time
         )
 

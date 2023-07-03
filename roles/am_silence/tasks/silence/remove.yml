@@ -1,0 +1,41 @@
+---
+
+- name: remove alertmanager silence
+  tags:
+    - delete_alertmanager_silence
+  block:
+    - name: do facts module to get latest information
+      ansible.builtin.setup:
+
+    - name: set local fact for silencer
+      ansible.builtin.set_fact:
+        latest_silence_id: "{{ ansible_local.silence.id }}"
+      when:
+        - ansible_local.silence is defined
+        - ansible_local.silence.id is defined
+        - ansible_local.silence.id | string | length != 0
+
+    - name: delete latest silence
+      when:
+        - latest_silence_id is defined
+        - latest_silence_id
+      block:
+        - name: latest silencer ID
+          ansible.builtin.debug:
+            msg: "{{ latest_silence_id }}"
+          when:
+            - latest_silence_id is defined
+
+        - name: delete silence
+          bodsch.prometheus.alertmanager_silence:
+            state: remove
+            url: "{{ silence_alertmanager.url }}"
+            silence_id: "{{ latest_silence_id }}"
+          register: silence_resp_del
+
+    - name: remove silence fact
+      ansible.builtin.file:
+        path: /etc/ansible/facts.d/silence.fact
+        state: absent
+
+...
