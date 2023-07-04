@@ -20,15 +20,6 @@
         - default.yaml
       skip: true
 
-- name: define delegate instance for download handling
-  ansible.builtin.set_fact:
-    trickster_delegate_to: "{{ ansible_host }}"
-    trickster_local_tmp_directory: "{{
-        lookup('env', 'CUSTOM_LOCAL_TMP_DIRECTORY') |
-        default('/var/cache/ansible/trickster', true) }}/{{ trickster_version }}"
-  when:
-    - trickster_direct_download
-
 - name: install dependency
   ansible.builtin.package:
     name: "{{ trickster_requirements }}"
@@ -36,91 +27,8 @@
   when:
     - trickster_requirements | default([]) | count > 0
 
-- name: get latest release
-  delegate_to: localhost
-  become: false
-  run_once: true
-  when:
-    - trickster_version == "latest"
-  block:
-    - name: get latest release
-      delegate_to: localhost
-      become: false
-      run_once: true
-      bodsch.scm.github_latest:
-        project: tricksterproxy
-        repository: trickster
-        user: "{{ lookup('env', 'GH_USER') | default(omit) }}"
-        password: "{{ lookup('env', 'GH_TOKEN') | default(omit) }}"
-        github_tags: "{{ trickster_scm.use_tags | default('false') }}"
-        without_beta: "{{ trickster_scm.without_beta | default('false') }}"
-        filter_elements: "{{ trickster_scm.version_filter | default([]) }}"
-      register: _latest_release
-
-    - name: re-define trickster_version
-      ansible.builtin.set_fact:
-        trickster_version: "{{ _latest_release.latest_release }}"
-
-- name: detect our installation path '{{ trickster_install_path | dirname }}'
-  ansible.builtin.stat:
-    path: "{{ trickster_install_path | dirname }}"
-    get_checksum: false
-  register: stat_trickster_path
-  ignore_errors: true
-
-- name: old installation
-  when:
-    - stat_trickster_path is defined
-    - stat_trickster_path.stat is defined
-    - stat_trickster_path.stat.isdir is defined
-    - not stat_trickster_path.stat.isdir
-  block:
-    - name: stop old service
-      ansible.builtin.service:
-        name: trickster
-        state: stopped
-        enabled: false
-      notify:
-        - daemon-reload
-
-    - name: remove installed systemd unit
-      ansible.builtin.file:
-        state: absent
-        path: /etc/systemd/system/trickster.service
-      when:
-        - ansible_service_mgr | lower == "systemd"
-
-    - name: remove installed trickster
-      ansible.builtin.file:
-        state: absent
-        path: "{{ stat_trickster_path.stat.path }}"
-
-- name: flush handlers
-  ansible.builtin.meta: flush_handlers
-
-- name: user and group handling
-  when:
-    - trickster_system_user != "root"
-  block:
-    - name: create trickster group
-      ansible.builtin.group:
-        name: "{{ trickster_system_group }}"
-        state: present
-        system: true
-
-    - name: create trickster user
-      ansible.builtin.user:
-        name: "{{ trickster_system_user }}"
-        groups: "{{ trickster_system_group }}"
-        append: true
-        shell: /usr/sbin/nologin
-        system: true
-        createhome: false
-        home: /nonexistent
-
 - name: merge trickster configuration between defaults and custom
   ansible.builtin.set_fact:
-    trickster_release: "{{ trickster_defaults_release | combine(trickster_release, recursive=True) }}"
     trickster_service_config: "{{ trickster_defaults_service_config | combine(trickster_service_config, recursive=True) }}"
     trickster_main: "{{ trickster_defaults_main | combine(trickster_main, recursive=True) }}"
     trickster_frontend: "{{ trickster_defaults_frontend | combine(trickster_frontend, recursive=True) }}"

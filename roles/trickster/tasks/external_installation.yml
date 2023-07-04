@@ -1,0 +1,40 @@
+---
+
+- name: detect our installation path '{{ trickster_install_path | dirname }}'
+  ansible.builtin.stat:
+    path: "{{ trickster_install_path | dirname }}"
+    get_checksum: false
+  register: stat_trickster_path
+  ignore_errors: true
+
+- name: old installation
+  when:
+    - stat_trickster_path is defined
+    - stat_trickster_path.stat is defined
+    - stat_trickster_path.stat.isdir is defined
+    - not stat_trickster_path.stat.isdir
+  block:
+    - name: stop old service
+      ansible.builtin.service:
+        name: trickster
+        state: stopped
+        enabled: false
+      notify:
+        - daemon-reload
+
+    - name: remove installed systemd unit
+      ansible.builtin.file:
+        state: absent
+        path: /etc/systemd/system/trickster.service
+      when:
+        - ansible_service_mgr | lower == "systemd"
+
+    - name: remove installed trickster
+      ansible.builtin.file:
+        state: absent
+        path: "{{ stat_trickster_path.stat.path }}"
+
+- name: flush handlers
+  ansible.builtin.meta: flush_handlers
+
+...

@@ -1,5 +1,25 @@
 ---
 
+- name: user and group handling
+  when:
+    - trickster_system_user != "root"
+  block:
+    - name: create trickster group
+      ansible.builtin.group:
+        name: "{{ trickster_system_group }}"
+        state: present
+        system: true
+
+    - name: create trickster user
+      ansible.builtin.user:
+        name: "{{ trickster_system_user }}"
+        groups: "{{ trickster_system_group }}"
+        append: true
+        shell: /usr/sbin/nologin
+        system: true
+        createhome: false
+        home: /nonexistent
+
 - name: create install directory
   ansible.builtin.file:
     path: "{{ trickster_install_path }}"
