@@ -1,5 +1,29 @@
 ---
 
+- name: user and group handling
+  when:
+    - pushgateway_system_user != "root" or pushgateway_system_group != "root"
+  block:
+    - name: create pushgateway group
+      ansible.builtin.group:
+        name: "{{ pushgateway_system_group }}"
+        state: present
+        system: true
+      when:
+        - pushgateway_system_group != "root"
+
+    - name: create pushgateway user
+      ansible.builtin.user:
+        name: "{{ pushgateway_system_user }}"
+        groups: "{{ pushgateway_system_group }}"
+        append: true
+        shell: /usr/sbin/nologin
+        system: true
+        createhome: false
+        home: /nonexistent
+      when:
+        - pushgateway_system_user != "root"
+
 - name: create install directory
   ansible.builtin.file:
     path: "{{ pushgateway_install_path }}"
