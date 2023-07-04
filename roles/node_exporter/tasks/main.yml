@@ -6,7 +6,6 @@
 - name: download archive
   ansible.builtin.include_tasks: download.yml
 
-<<<<<<< Updated upstream
 - name: install
   ansible.builtin.include_tasks: install.yml
 
