@@ -29,7 +29,6 @@
 
 - name: merge prometheus configuration between defaults and custom
   ansible.builtin.set_fact:
-    prometheus_release: "{{ prometheus_defaults_release | combine(prometheus_release, recursive=True) }}"
     prometheus_service: "{{ prometheus_defaults_service | combine(prometheus_service, recursive=True) }}"
     prometheus_global: "{{ prometheus_defaults_global | combine(prometheus_global, recursive=True) }}"
     prometheus_alerting: "{{ prometheus_defaults_alerting | combine(prometheus_alerting, recursive=True) }}"

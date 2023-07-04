@@ -22,6 +22,10 @@
       ansible.builtin.set_fact:
         prometheus_version: "{{ _latest_release.latest_release }}"
 
+- name: define download information
+  ansible.builtin.set_fact:
+    prometheus_release: "{{ prometheus_defaults_release | combine(prometheus_release, recursive=True) }}"
+
 - name: define delegate instance for download handling
   ansible.builtin.set_fact:
     prometheus_delegate_to: "{{ ansible_host }}"
@@ -78,7 +82,7 @@
             - _latest_checksum.checksum is defined
             - _latest_checksum.checksum | string | length > 0
 
-    - name: download prometheus binary archive
+    - name: download prometheus binary archive {{ prometheus_release.file }}
       become: false
       delegate_to: "{{ prometheus_delegate_to }}"
       run_once: "{{ 'false' if prometheus_direct_download else 'true' }}"
