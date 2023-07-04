@@ -85,17 +85,17 @@ jobs:
 
       - name: test ${{ matrix.collection_role }} - ${{ matrix.scenario }}
         run: |
-          ANSIBLE_RUN_TAGS=silence_add \
+          export ANSIBLE_RUN_TAGS=silence_add
           make \
-            test \
+            converge \
               -e TOX_ANSIBLE="ansible_${{ matrix.ansible-version }}" \
               -e DISTRIBUTION="${{ matrix.image }}" \
               -e COLLECTION_ROLE="${{ matrix.collection_role }}" \
               -e COLLECTION_SCENARIO="${{ matrix.scenario }}"
 
-          ANSIBLE_RUN_TAGS=silence_remove \
+          export ANSIBLE_RUN_TAGS=silence_remove
           make \
-            test \
+            converge \
               -e TOX_ANSIBLE="ansible_${{ matrix.ansible-version }}" \
               -e DISTRIBUTION="${{ matrix.image }}" \
               -e COLLECTION_ROLE="${{ matrix.collection_role }}" \
@@ -144,17 +144,17 @@ jobs:
 
       - name: test ${{ matrix.collection_role }} - ${{ matrix.scenario }}
         run: |
-          ANSIBLE_RUN_TAGS=silence_add \
+          export ANSIBLE_RUN_TAGS=silence_add
           make \
-            test \
+            converge \
               -e TOX_ANSIBLE="ansible_${{ matrix.ansible-version }}" \
               -e DISTRIBUTION="${{ matrix.image }}" \
               -e COLLECTION_ROLE="${{ matrix.collection_role }}" \
               -e COLLECTION_SCENARIO="${{ matrix.scenario }}"
 
-          ANSIBLE_RUN_TAGS=silence_remove \
+          export ANSIBLE_RUN_TAGS=silence_remove
           make \
-            test \
+            converge \
               -e TOX_ANSIBLE="ansible_${{ matrix.ansible-version }}" \
               -e DISTRIBUTION="${{ matrix.image }}" \
               -e COLLECTION_ROLE="${{ matrix.collection_role }}" \
