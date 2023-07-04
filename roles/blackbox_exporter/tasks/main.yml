@@ -14,7 +14,7 @@
     - blackbox_exporter_install
 
 - name: external installation
-  ansible.builtin.include_tasks: external_installation.yml
+  ansible.builtin.import_tasks: external_installation.yml
   tags:
     - blackbox_exporter_install
 

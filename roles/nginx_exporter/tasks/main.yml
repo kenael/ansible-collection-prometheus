@@ -14,7 +14,7 @@
     - nginx_exporter_install
 
 - name: external installation
-  ansible.builtin.include_tasks: external_installation.yml
+  ansible.builtin.import_tasks: external_installation.yml
   tags:
     - nginx_exporter_install
 

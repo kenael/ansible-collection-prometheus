@@ -14,7 +14,7 @@
     - trickster_install
 
 - name: external installation
-  ansible.builtin.include_tasks: external_installation.yml
+  ansible.builtin.import_tasks: external_installation.yml
   become: true
   tags:
     - trickster_install
