@@ -1,5 +1,40 @@
 ---
 
+- name: get latest release
+  delegate_to: localhost
+  become: false
+  run_once: true
+  when:
+    - node_exporter_version == "latest"
+  block:
+    - name: get latest release
+      delegate_to: localhost
+      become: false
+      run_once: true
+      bodsch.scm.github_latest:
+        project: prometheus
+        repository: node_exporter
+        user: "{{ lookup('env', 'GH_USER') | default(omit) }}"
+        password: "{{ lookup('env', 'GH_TOKEN') | default(omit) }}"
+      register: _latest_release
+
+    - name: re-define node_exporter_version
+      ansible.builtin.set_fact:
+        node_exporter_version: "{{ _latest_release.latest_release }}"
+
+- name: define download information
+  ansible.builtin.set_fact:
+    node_exporter_release: "{{ node_exporter_defaults_release | combine(node_exporter_release, recursive=True) }}"
+
+- name: define delegate instance for download handling
+  ansible.builtin.set_fact:
+    node_exporter_delegate_to: "{{ ansible_host }}"
+    node_exporter_local_tmp_directory: "{{
+        lookup('env', 'CUSTOM_LOCAL_TMP_DIRECTORY') |
+        default('/var/cache/ansible/node_exporter', true) }}/{{ node_exporter_version }}"
+  when:
+    - node_exporter_direct_download
+
 - name: create download directory
   become: false
   delegate_to: "{{ node_exporter_delegate_to }}"

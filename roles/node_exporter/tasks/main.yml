@@ -6,6 +6,9 @@
 - name: download archive
   ansible.builtin.include_tasks: download.yml
 
+- name: external installation
+  ansible.builtin.include_tasks: external_installation.yml
+
 - name: install
   ansible.builtin.include_tasks: install.yml
 
