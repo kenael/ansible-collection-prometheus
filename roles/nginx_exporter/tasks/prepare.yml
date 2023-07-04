@@ -20,15 +20,6 @@
         - default.yaml
       skip: true
 
-- name: define delegate instance for download handling
-  ansible.builtin.set_fact:
-    nginx_exporter_delegate_to: "{{ ansible_host }}"
-    nginx_exporter_local_tmp_directory: "{{
-        lookup('env', 'CUSTOM_LOCAL_TMP_DIRECTORY') |
-        default('/var/cache/ansible/nginx_exporter', true) }}/{{ nginx_exporter_version }}"
-  when:
-    - nginx_exporter_direct_download
-
 - name: install dependency
   ansible.builtin.package:
     name: "{{ nginx_exporter_requirements }}"
@@ -36,88 +27,8 @@
   when:
     - nginx_exporter_requirements | default([]) | count > 0
 
-- name: get latest release
-  delegate_to: localhost
-  become: false
-  run_once: true
-  when:
-    - nginx_exporter_version == "latest"
-  block:
-    - name: get latest release
-      delegate_to: localhost
-      become: false
-      run_once: true
-      bodsch.scm.github_latest:
-        project: nginxinc
-        repository: nginx-prometheus-exporter
-        user: "{{ lookup('env', 'GH_USER') | default(omit) }}"
-        password: "{{ lookup('env', 'GH_TOKEN') | default(omit) }}"
-      register: _latest_release
-
-    - name: re-define nginx_exporter_version
-      ansible.builtin.set_fact:
-        nginx_exporter_version: "{{ _latest_release.latest_release }}"
-
-- name: detect our installation path '{{ nginx_exporter_install_path | dirname }}'
-  ansible.builtin.stat:
-    path: "{{ nginx_exporter_install_path | dirname }}"
-    get_checksum: false
-  register: stat_nginx_exporter_path
-  ignore_errors: true
-
-- name: old installation
-  when:
-    - stat_nginx_exporter_path is defined
-    - stat_nginx_exporter_path.stat is defined
-    - stat_nginx_exporter_path.stat.isdir is defined
-    - not stat_nginx_exporter_path.stat.isdir
-  block:
-    - name: stop old service
-      ansible.builtin.service:
-        name: nginx_exporter
-        state: stopped
-        enabled: false
-      notify:
-        - daemon-reload
-
-    - name: remove installed systemd unit
-      ansible.builtin.file:
-        state: absent
-        path: /etc/systemd/system/nginx_exporter.service
-      when:
-        - ansible_service_mgr | lower == "systemd"
-
-    - name: remove installed nginx_exporter
-      ansible.builtin.file:
-        state: absent
-        path: "{{ stat_nginx_exporter_path.stat.path }}"
-
-- name: flush handlers
-  ansible.builtin.meta: flush_handlers
-
-- name: user and group handling
-  when:
-    - nginx_exporter_system_user != "root"
-  block:
-    - name: create nginx_exporter group
-      ansible.builtin.group:
-        name: "{{ nginx_exporter_system_group }}"
-        state: present
-        system: true
-
-    - name: create nginx_exporter user
-      ansible.builtin.user:
-        name: "{{ nginx_exporter_system_user }}"
-        groups: "{{ nginx_exporter_system_group }}"
-        append: true
-        shell: /usr/sbin/nologin
-        system: true
-        createhome: false
-        home: /nonexistent
-
 - name: merge nginx_exporter configuration between defaults and custom
   set_fact:
-    nginx_exporter_release: "{{ nginx_exporter_defaults_release | combine(nginx_exporter_release, recursive=True) }}"
     nginx_exporter_service: "{{ nginx_exporter_defaults_service | combine(nginx_exporter_service, recursive=True) }}"
 
 ...

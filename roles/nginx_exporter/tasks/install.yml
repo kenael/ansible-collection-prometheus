@@ -1,5 +1,25 @@
 ---
 
+- name: user and group handling
+  when:
+    - nginx_exporter_system_user != "root"
+  block:
+    - name: create nginx_exporter group
+      ansible.builtin.group:
+        name: "{{ nginx_exporter_system_group }}"
+        state: present
+        system: true
+
+    - name: create nginx_exporter user
+      ansible.builtin.user:
+        name: "{{ nginx_exporter_system_user }}"
+        groups: "{{ nginx_exporter_system_group }}"
+        append: true
+        shell: /usr/sbin/nologin
+        system: true
+        createhome: false
+        home: /nonexistent
+
 - name: create install directory
   ansible.builtin.file:
     path: "{{ nginx_exporter_install_path }}"
