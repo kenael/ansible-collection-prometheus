@@ -1,5 +1,25 @@
 ---
 
+- name: user and group handling
+  when:
+    - blackbox_exporter_system_user != "root"
+  block:
+    - name: create blackbox_exporter group
+      ansible.builtin.group:
+        name: "{{ blackbox_exporter_system_group }}"
+        state: present
+        system: true
+
+    - name: create blackbox_exporter user
+      ansible.builtin.user:
+        name: "{{ blackbox_exporter_system_user }}"
+        groups: "{{ blackbox_exporter_system_group }}"
+        append: true
+        shell: /usr/sbin/nologin
+        system: true
+        createhome: false
+        home: /nonexistent
+
 - name: create install directory
   ansible.builtin.file:
     path: "{{ blackbox_exporter_install_path }}"

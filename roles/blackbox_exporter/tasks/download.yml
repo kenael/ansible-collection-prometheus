@@ -1,5 +1,36 @@
 ---
 
+- name: get latest release
+  delegate_to: localhost
+  become: false
+  run_once: true
+  when:
+    - blackbox_exporter_version == "latest"
+  block:
+    - name: get latest release
+      delegate_to: localhost
+      become: false
+      run_once: true
+      bodsch.scm.github_latest:
+        project: prometheus
+        repository: blackbox_exporter
+        user: "{{ lookup('env', 'GH_USER') | default(omit) }}"
+        password: "{{ lookup('env', 'GH_TOKEN') | default(omit) }}"
+      register: _latest_release
+
+    - name: re-define blackbox_exporter_version
+      ansible.builtin.set_fact:
+        blackbox_exporter_version: "{{ _latest_release.latest_release }}"
+
+- name: define delegate instance for download handling
+  ansible.builtin.set_fact:
+    blackbox_exporter_delegate_to: "{{ ansible_host }}"
+    blackbox_exporter_local_tmp_directory: "{{
+        lookup('env', 'CUSTOM_LOCAL_TMP_DIRECTORY') |
+        default('/var/cache/ansible/blackbox_exporter', true) }}/{{ blackbox_exporter_version }}"
+  when:
+    - blackbox_exporter_direct_download
+
 - name: create download directory
   become: false
   delegate_to: "{{ blackbox_exporter_delegate_to }}"
@@ -96,4 +127,5 @@
   when:
     - stat_blackbox_exporter_binary.stat is defined
     - not stat_blackbox_exporter_binary.stat.exists | default('false')
+
 ...

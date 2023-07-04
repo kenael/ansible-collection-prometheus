@@ -2,22 +2,39 @@
 {{ ansible_managed | comment }}
 
 [Unit]
-Description       = Prometheus blackbox Exporter
-After             = network-online.target
+Description             = Prometheus blackbox Exporter
+After                   = network-online.target
+StartLimitInterval      = 0
+StartLimitIntervalSec   = 0
 
 [Service]
-Type              = simple
-EnvironmentFile   = {{ blackbox_exporter_defaults_directory }}/blackbox_exporter
+Type                    = simple
+EnvironmentFile         = {{ blackbox_exporter_defaults_directory }}/blackbox_exporter
 
-User              = {{ blackbox_exporter_system_user }}
-Group             = {{ blackbox_exporter_system_group }}
+User                    = {{ blackbox_exporter_system_user }}
+Group                   = {{ blackbox_exporter_system_group }}
 
-ExecReload        = /bin/kill -HUP $MAINPID
-ExecStartPre      = /usr/bin/{{ blackbox_exporter_release.binary }} --config.file {{ blackbox_exporter_service.config.file }} --config.check
-ExecStart         = /usr/bin/{{ blackbox_exporter_release.binary }} $OPTIONS
+ExecReload              = /bin/kill -HUP $MAINPID
+ExecStartPre            = /usr/bin/{{ blackbox_exporter_release.binary }} --config.file {{ blackbox_exporter_service.config.file }} --config.check
+ExecStart               = /usr/bin/{{ blackbox_exporter_release.binary }} $OPTIONS
 
-SyslogIdentifier  = blackbox_exporter
-Restart           = always
+SyslogIdentifier        = blackbox_exporter
+Restart                 = always
+RestartSec              = 15
+
+LockPersonality         = true
+NoNewPrivileges         = true
+MemoryDenyWriteExecute  = true
+PrivateTmp              = true
+ProtectHome             = true
+RemoveIPC               = true
+RestrictSUIDSGID        = true
+
+AmbientCapabilities     = CAP_NET_RAW
+ProtectControlGroups    = true
+ProtectKernelModules    = true
+ProtectKernelTunables   = yes
+ProtectSystem           = strict
 
 [Install]
-WantedBy          = multi-user.target
+WantedBy                = multi-user.target
