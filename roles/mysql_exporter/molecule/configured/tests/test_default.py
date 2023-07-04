@@ -136,7 +136,7 @@ def test_files(host, get_vars):
     files.append("/usr/bin/mysqld_exporter")
 
     if install_dir:
-        files.append(f"{install_dir}/mysql_exporter")
+        files.append(f"{install_dir}/mysqld_exporter")
     if defaults_dir and not distribution == "artix":
         files.append(f"{defaults_dir}/mysql_exporter")
     if config_dir:
