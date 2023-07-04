@@ -1,6 +1,6 @@
 ---
 
-name: trickster
+name: am_silence
 
 on:
   workflow_dispatch:

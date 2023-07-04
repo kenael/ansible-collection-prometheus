@@ -133,7 +133,7 @@ def test_files(host, get_vars):
         install_dir = install_dir.replace('latest', version)
 
     files = []
-    files.append("/usr/bin/mysql_exporter")
+    files.append("/usr/bin/mysqld_exporter")
 
     if install_dir:
         files.append(f"{install_dir}/mysql_exporter")
