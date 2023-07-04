@@ -1,5 +1,25 @@
 ---
 
+- name: user and group handling
+  when:
+    - json_exporter_system_user != "root"
+  block:
+    - name: create json_exporter group
+      ansible.builtin.group:
+        name: "{{ json_exporter_system_group }}"
+        state: present
+        system: true
+
+    - name: create json_exporter user
+      ansible.builtin.user:
+        name: "{{ json_exporter_system_user }}"
+        groups: "{{ json_exporter_system_group }}"
+        append: true
+        shell: /usr/sbin/nologin
+        system: true
+        createhome: false
+        home: /nonexistent
+
 - name: create install directory
   ansible.builtin.file:
     path: "{{ json_exporter_install_path }}"

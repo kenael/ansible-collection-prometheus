@@ -20,15 +20,6 @@
         - default.yaml
       skip: true
 
-- name: define delegate instance for download handling
-  ansible.builtin.set_fact:
-    json_exporter_delegate_to: "{{ ansible_host }}"
-    json_exporter_local_tmp_directory: "{{
-        lookup('env', 'CUSTOM_LOCAL_TMP_DIRECTORY') |
-        default('/var/cache/ansible/json_exporter', true) }}/{{ json_exporter_version }}"
-  when:
-    - json_exporter_direct_download
-
 - name: install dependency
   ansible.builtin.package:
     name: "{{ json_exporter_requirements }}"
@@ -36,88 +27,8 @@
   when:
     - json_exporter_requirements | default([]) | count > 0
 
-- name: get latest release
-  delegate_to: localhost
-  become: false
-  run_once: true
-  when:
-    - json_exporter_version == "latest"
-  block:
-    - name: get latest release
-      delegate_to: localhost
-      become: false
-      run_once: true
-      bodsch.scm.github_latest:
-        project: prometheus-community
-        repository: json_exporter
-        user: "{{ lookup('env', 'GH_USER') | default(omit) }}"
-        password: "{{ lookup('env', 'GH_TOKEN') | default(omit) }}"
-      register: _latest_release
-
-    - name: re-define json_exporter_version
-      ansible.builtin.set_fact:
-        json_exporter_version: "{{ _latest_release.latest_release }}"
-
-- name: detect our installation path '{{ json_exporter_install_path | dirname }}'
-  ansible.builtin.stat:
-    path: "{{ json_exporter_install_path | dirname }}"
-    get_checksum: false
-  register: stat_json_exporter_path
-  ignore_errors: true
-
-- name: old installation
-  when:
-    - stat_json_exporter_path is defined
-    - stat_json_exporter_path.stat is defined
-    - stat_json_exporter_path.stat.isdir is defined
-    - not stat_json_exporter_path.stat.isdir
-  block:
-    - name: stop old service
-      ansible.builtin.service:
-        name: json_exporter
-        state: stopped
-        enabled: false
-      notify:
-        - daemon-reload
-
-    - name: remove installed systemd unit
-      ansible.builtin.file:
-        state: absent
-        path: /etc/systemd/system/json_exporter.service
-      when:
-        - ansible_service_mgr | lower == "systemd"
-
-    - name: remove installed json_exporter
-      ansible.builtin.file:
-        state: absent
-        path: "{{ stat_json_exporter_path.stat.path }}"
-
-- name: flush handlers
-  ansible.builtin.meta: flush_handlers
-
-- name: user and group handling
-  when:
-    - json_exporter_system_user != "root"
-  block:
-    - name: create json_exporter group
-      ansible.builtin.group:
-        name: "{{ json_exporter_system_group }}"
-        state: present
-        system: true
-
-    - name: create json_exporter user
-      ansible.builtin.user:
-        name: "{{ json_exporter_system_user }}"
-        groups: "{{ json_exporter_system_group }}"
-        append: true
-        shell: /usr/sbin/nologin
-        system: true
-        createhome: false
-        home: /nonexistent
-
 - name: merge json_exporter configuration between defaults and custom
   ansible.builtin.set_fact:
     json_exporter_service: "{{ json_exporter_defaults_service | combine(json_exporter_service, recursive=True) }}"
-    json_exporter_release: "{{ json_exporter_defaults_release | combine(json_exporter_release, recursive=True) }}"
 
 ...

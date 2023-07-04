@@ -12,6 +12,11 @@
   tags:
     - json_exporter_install
 
+- name: external installation
+  ansible.builtin.include_tasks: external_installation.yml
+  tags:
+    - json_exporter_install
+
 - name: install
   ansible.builtin.import_tasks: install.yml
   tags:
