@@ -1,0 +1,7 @@
+---
+
+silence_dependencies:
+  - python-requests
+  - python-dateutil
+
+...
