@@ -1,5 +1,40 @@
 ---
 
+- name: get latest release
+  delegate_to: localhost
+  become: false
+  run_once: true
+  when:
+    - mysql_exporter_version == "latest"
+  block:
+    - name: get latest release
+      delegate_to: localhost
+      become: false
+      run_once: true
+      bodsch.scm.github_latest:
+        project: prometheus
+        repository: mysqld_exporter
+        user: "{{ lookup('env', 'GH_USER') | default(omit) }}"
+        password: "{{ lookup('env', 'GH_TOKEN') | default(omit) }}"
+      register: _latest_release
+
+    - name: re-define mysql_exporter_version
+      ansible.builtin.set_fact:
+        mysql_exporter_version: "{{ _latest_release.latest_release }}"
+
+- name: define download information
+  ansible.builtin.set_fact:
+    mysql_exporter_release: "{{ mysql_exporter_defaults_release | combine(mysql_exporter_release, recursive=True) }}"
+
+- name: define delegate instance for download handling
+  ansible.builtin.set_fact:
+    mysql_exporter_delegate_to: "{{ ansible_host }}"
+    mysql_exporter_local_tmp_directory: "{{
+        lookup('env', 'CUSTOM_LOCAL_TMP_DIRECTORY') |
+        default('/var/cache/ansible/mysql_exporter', true) }}/{{ mysql_exporter_version }}"
+  when:
+    - mysql_exporter_direct_download
+
 - name: create download directory
   become: false
   delegate_to: "{{ mysql_exporter_delegate_to }}"

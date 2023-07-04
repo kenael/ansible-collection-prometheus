@@ -2,22 +2,39 @@
 {{ ansible_managed | comment }}
 
 [Unit]
-Description       = Prometheus exporter for MySQL server
-Documentation     = https://github.com/prometheus/mysqld_exporter
-After             = network-online.target
+Description             = Prometheus exporter for MySQL server
+Documentation           = https://github.com/prometheus/mysqld_exporter
+After                   = network-online.target
+StartLimitInterval      = 0
+StartLimitIntervalSec   = 0
 
 [Service]
-Type              = simple
-EnvironmentFile   = {{ mysql_exporter_defaults_directory }}/mysql_exporter
+Type                    = simple
+EnvironmentFile         = {{ mysql_exporter_defaults_directory }}/mysql_exporter
 
-User              = {{ mysql_exporter_system_user }}
-Group             = {{ mysql_exporter_system_group }}
+User                    = {{ mysql_exporter_system_user }}
+Group                   = {{ mysql_exporter_system_group }}
 
-ExecReload        = /bin/kill -HUP $MAINPID
-ExecStart         = /usr/bin/{{ mysql_exporter_release.binary }} $OPTIONS
+ExecReload              = /bin/kill -HUP $MAINPID
+ExecStart               = /usr/bin/{{ mysql_exporter_release.binary }} $OPTIONS
 
-SyslogIdentifier  = mysql_exporter
-Restart           = always
+SyslogIdentifier        = mysql_exporter
+Restart                 = always
+RestartSec              = 15
+
+LockPersonality         = true
+NoNewPrivileges         = true
+MemoryDenyWriteExecute  = true
+PrivateTmp              = true
+ProtectHome             = true
+RemoveIPC               = true
+RestrictSUIDSGID        = true
+
+AmbientCapabilities     = CAP_NET_RAW
+ProtectControlGroups    = true
+ProtectKernelModules    = true
+ProtectKernelTunables   = yes
+ProtectSystem           = strict
 
 [Install]
 Alias             = mysql-exporter.service

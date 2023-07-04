@@ -1,5 +1,25 @@
 ---
 
+- name: user and group handling
+  when:
+    - mysql_exporter_system_user != "root"
+  block:
+    - name: create mysql_exporter group
+      ansible.builtin.group:
+        name: "{{ mysql_exporter_system_group }}"
+        state: present
+        system: true
+
+    - name: create mysql_exporter user
+      ansible.builtin.user:
+        name: "{{ mysql_exporter_system_user }}"
+        groups: "{{ mysql_exporter_system_group }}"
+        append: true
+        shell: /usr/sbin/nologin
+        system: true
+        createhome: false
+        home: /nonexistent
+
 - name: create install directory
   ansible.builtin.file:
     path: "{{ mysql_exporter_install_path }}"
