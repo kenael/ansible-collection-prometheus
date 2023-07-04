@@ -86,44 +86,53 @@ class Alertmanager():
 
         try:
             if method == 'GET':
-                ret = requests.get(
+                response = requests.get(
                     url,
                     verify=False
                 )
-                ret.raise_for_status()
+                response.raise_for_status()
 
             elif method == 'POST':
-                ret = requests.post(
+                response = requests.post(
                     url,
                     json=data,
                     verify=False
                 )
 
-                ret.raise_for_status()
+                response.raise_for_status()
 
             elif method == "DELETE":
-                ret = requests.delete(
+                response = requests.delete(
                     url,
                     verify=False
                 )
 
-                ret.raise_for_status()
+                response.raise_for_status()
 
             else:
                 self.module.log(msg=f"unsupported: {method}")
 
                 return 500, f"Unsupported method '{method}'"
 
-            # ret.raise_for_status()
-            # self.module.log(msg="------------------------------------------------------------------")
-            # self.module.log(msg=f" text    : {type(ret.text)} / {ret.text}")
-            # self.module.log(msg=f" headers : {type(ret.headers)} / {ret.headers}")
-            # self.module.log(msg=f" code    : {type(ret.status_code)} / {ret.status_code}")
-            # self.module.log(msg="------------------------------------------------------------------")
+            return response.status_code, response.text  # json.loads(response.text)
 
-            return ret.status_code, ret.text  # json.loads(ret.text)
+        except requests.exceptions.HTTPError as e:
+            self.module.log(msg=f"ERROR   : {e}")
+
+            status_code = e.response.status_code
+            status_message = e.response.text
+            # self.module.log(msg=f" status_message : {status_message} / {type(status_message)}")
+            # self.module.log(msg=f" status_message : {e.response.json()}")
+
+            return status_code, status_message
+
+        except ConnectionError as e:
+            error_text = f"{type(e).__name__} {(str(e) if len(e.args) == 0 else str(e.args[0]))}"
+            self.module.log(msg=f"ERROR   : {error_text}")
+            self.module.log(msg="------------------------------------------------------------------")
+            return 500, error_text
 
         except Exception as e:
-            self.module.log(msg=f"{str(e)}")
+            self.module.log(msg=f"ERROR   : {e}")
 
-            return 500, str(e)
+            return response.status_code, response.text
