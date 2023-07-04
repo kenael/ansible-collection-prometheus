@@ -1,0 +1,43 @@
+---
+
+- name: detect external installation
+  ansible.builtin.stat:
+    path: /usr/local/bin/prometheus
+    get_checksum: false
+  register: stat_prometheus_path
+  ignore_errors: true
+
+- name: old installation
+  when:
+    - stat_prometheus_path is defined
+    - stat_prometheus_path.stat is defined
+    - stat_prometheus_path.stat.isdir is defined
+    - not stat_prometheus_path.stat.isdir
+  block:
+    - name: stop old service
+      ansible.builtin.service:
+        name: prometheus
+        state: stopped
+        enabled: false
+      notify:
+        - daemon-reload
+
+    - name: remove installed systemd unit
+      ansible.builtin.file:
+        state: absent
+        path: /etc/systemd/system/prometheus.service
+      when:
+        - ansible_service_mgr | lower == "systemd"
+
+    - name: remove installed prometheus
+      ansible.builtin.file:
+        state: absent
+        path: "{{ item }}"
+      loop:
+        - /usr/local/bin/prometheus
+        - /usr/local/bin/promtool
+
+- name: flush handlers
+  ansible.builtin.meta: flush_handlers
+
+...
