@@ -20,15 +20,6 @@
         - default.yml
       skip: true
 
-- name: define delegate instance for download handling
-  ansible.builtin.set_fact:
-    alertmanager_delegate_to: "{{ ansible_host }}"
-    alertmanager_local_tmp_directory: "{{
-        lookup('env', 'CUSTOM_LOCAL_TMP_DIRECTORY') |
-        default('/var/cache/ansible/alertmanager', true) }}/{{ alertmanager_version }}"
-  when:
-    - alertmanager_direct_download
-
 - name: install dependency
   ansible.builtin.package:
     name: "{{ alertmanager_requirements }}"
@@ -36,88 +27,8 @@
   when:
     - alertmanager_requirements | default([]) | count > 0
 
-- name: get latest release
-  delegate_to: localhost
-  become: false
-  run_once: true
-  when:
-    - alertmanager_version == "latest"
-  block:
-    - name: get latest release
-      delegate_to: localhost
-      become: false
-      run_once: true
-      bodsch.scm.github_latest:
-        project: prometheus
-        repository: alertmanager
-        user: "{{ lookup('env', 'GH_USER') | default(omit) }}"
-        password: "{{ lookup('env', 'GH_TOKEN') | default(omit) }}"
-      register: _latest_release
-
-    - name: re-define alertmanager_version
-      ansible.builtin.set_fact:
-        alertmanager_version: "{{ _latest_release.latest_release }}"
-
-- name: detect our installation path '{{ alertmanager_install_path | dirname }}'
-  ansible.builtin.stat:
-    path: "{{ alertmanager_install_path | dirname }}"
-    get_checksum: false
-  register: stat_alertmanager_path
-  ignore_errors: true
-
-- name: old installation
-  when:
-    - stat_alertmanager_path is defined
-    - stat_alertmanager_path.stat is defined
-    - stat_alertmanager_path.stat.isdir is defined
-    - not stat_alertmanager_path.stat.isdir
-  block:
-    - name: stop old service
-      ansible.builtin.service:
-        name: alertmanager
-        state: stopped
-        enabled: false
-      notify:
-        - daemon-reload
-
-    - name: remove installed systemd unit
-      ansible.builtin.file:
-        state: absent
-        path: /etc/systemd/system/alertmanager.service
-      when:
-        - ansible_service_mgr | lower == "systemd"
-
-    - name: remove installed alertmanager
-      ansible.builtin.file:
-        state: absent
-        path: "{{ stat_alertmanager_path.stat.path }}"
-
-- name: flush handlers
-  ansible.builtin.meta: flush_handlers
-
-- name: user and group handling
-  when:
-    - alertmanager_system_user != "root"
-  block:
-    - name: create alertmanager group
-      ansible.builtin.group:
-        name: "{{ alertmanager_system_group }}"
-        state: present
-        system: true
-
-    - name: create alertmanager user
-      ansible.builtin.user:
-        name: "{{ alertmanager_system_user }}"
-        groups: "{{ alertmanager_system_group }}"
-        append: true
-        shell: /usr/sbin/nologin
-        system: true
-        createhome: false
-        home: /nonexistent
-
 - name: merge alertmanager configuration between defaults and custom
   ansible.builtin.set_fact:
-    alertmanager_release: "{{ alertmanager_defaults_release | combine(alertmanager_release, recursive=True) }}"
     alertmanager_service: "{{ alertmanager_defaults_service | combine(alertmanager_service, recursive=True) }}"
     alertmanager_global: "{{ alertmanager_defaults_global | combine(alertmanager_global, recursive=True) }}"
     alertmanager_receivers: "{{ alertmanager_defaults_receivers | combine(alertmanager_receivers, recursive=True) }}"

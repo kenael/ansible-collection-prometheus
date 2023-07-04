@@ -1,4 +1,23 @@
 ---
+- name: user and group handling
+  when:
+    - alertmanager_system_user != "root"
+  block:
+    - name: create alertmanager group
+      ansible.builtin.group:
+        name: "{{ alertmanager_system_group }}"
+        state: present
+        system: true
+
+    - name: create alertmanager user
+      ansible.builtin.user:
+        name: "{{ alertmanager_system_user }}"
+        groups: "{{ alertmanager_system_group }}"
+        append: true
+        shell: /usr/sbin/nologin
+        system: true
+        createhome: false
+        home: /nonexistent
 
 - name: create install directory
   ansible.builtin.file:
