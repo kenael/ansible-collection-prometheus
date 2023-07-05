@@ -37,7 +37,7 @@
   delegate_to: "{{ docker_sd_delegate_to }}"
   run_once: "{{ 'false' if docker_sd_direct_download else 'true' }}"
   ansible.builtin.stat:
-    path: "{{ docker_sd_local_tmp_directory }}/{{ docker_sd_release.file }}"
+    path: "{{ docker_sd_local_tmp_directory }}/{{ docker_sd_release.binary }}"
   register: stat_file_binary
 
 - name: fail when extracted binary are missing
