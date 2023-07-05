@@ -1,0 +1,36 @@
+---
+
+name: push to ansible galaxy
+
+on:
+  workflow_run:
+    workflows:
+      - "alertmanager"
+      - "am_silence"
+      - "blackbox_exporter"
+      - "docker_sd"
+      - "json_exporter"
+      - "mysql_exporter"
+      - "nginx_exporter"
+      - "node_exporter"
+      - "promcheck"
+      - "prometheus"
+      - "trickster"
+    branches:
+      - main
+    types:
+      - completed
+
+jobs:
+  galaxy:
+    name: galaxy
+    runs-on: ubuntu-20.04
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: Check out the codebase
+        uses: actions/checkout@v3
+
+      - name: Deploy Ansible Galaxy Collection
+        uses: artis3n/ansible_galaxy_collection@v2.8.3
+        with:
+          api_key: '${{ secrets.GALAXY_API_KEY }}'
