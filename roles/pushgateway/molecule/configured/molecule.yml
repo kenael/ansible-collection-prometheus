@@ -18,11 +18,19 @@ platforms:
     docker_host: "${DOCKER_HOST:-unix://run/docker.sock}"
     privileged: true
     pre_build_image: true
-    published_ports:
-      - 9090:9090
-      - 9080:9080
+    cgroupns_mode: host
+    mounts:
+      - source: /sys/fs/cgroup
+        target: /sys/fs/cgroup
+        type: bind
+        read_only: false
     volumes:
-      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+        - /var/lib/containerd
+    capabilities:
+      - SYS_ADMIN
+    tmpfs:
+      - /run
+      - /tmp
 
 provisioner:
   name: ansible

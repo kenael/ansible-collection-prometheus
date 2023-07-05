@@ -19,15 +19,16 @@ platforms:
     privileged: true
     pre_build_image: true
     cgroupns_mode: host
+    cgroupns_mode: host
     mounts:
       - source: /sys/fs/cgroup
         target: /sys/fs/cgroup
         type: bind
         read_only: false
-      - source: /var/lib/containerd
-        target: /var/lib/containerd
-        type: bind
-        read_only: false
+    volumes:
+        - /var/lib/containerd
+    capabilities:
+      - SYS_ADMIN
     tmpfs:
       - /run
       - /tmp

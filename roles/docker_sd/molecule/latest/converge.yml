@@ -3,11 +3,5 @@
   hosts: all
   any_errors_fatal: true
 
-  environment:
-    # NETRC: ''
-    # https://github.com/ansible/ansible/issues/77133
-    # https://github.com/ansible/ansible/pull/76542
-    # LANGUAGE: en_UK.utf8
-
   roles:
-    - role: ansible-docker-sd
+    - role: bodsch.prometheus.docker_sd
