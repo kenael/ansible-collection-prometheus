@@ -1,0 +1,54 @@
+---
+
+docker_sd_main_version: "{{ docker_sd_version[0:3] }}"
+
+docker_sd_install_path: /usr/local/bin/docker-sd/{{ docker_sd_version }}
+
+docker_sd_delegate_to: localhost
+
+docker_sd_local_tmp_directory: "{{
+  lookup('env', 'CUSTOM_LOCAL_TMP_DIRECTORY') |
+  default(lookup('env', 'HOME') ~ '/.cache/ansible/docker-sd', true) }}/{{ docker_sd_version }}"
+
+docker_sd_requirements:
+  - iproute2
+  - gzip
+
+docker_sd_defaults_rest_api: {}
+  # port: 8088
+  # address: "0.0.0.0"
+
+docker_sd_defaults_hosts: []
+  # - host: "tcp://molecule.matrix.lan:2376"
+  #   #username: ""
+  #   #password: ""
+  #   #tls: {}
+  #   services:
+  #     - "cae-live"
+  #   metrics_ports:
+  #     8080: "/metrics"
+
+docker_sd_defaults_addition_labels: []
+
+docker_sd_defaults_directory: /etc/default
+
+docker_sd_defaults_release:
+  download_url: https://github.com/bodsch/docker-sd/releases
+  file: "docker-sd-{{ docker_sd_version }}-{{ ansible_facts.system | lower }}-{{ system_architecture }}.tar.gz"
+  checksum: "docker-sd-{{ docker_sd_version }}-{{ ansible_facts.system | lower }}-{{ system_architecture }}.tar.gz.sha256"
+  binary: docker-sd
+
+# ---------------------------------------------
+
+go_arch_map:
+  x86_64: 'amd64'
+  aarch64: 'arm64'
+  armv7l: 'armv7'
+  armv6l: 'armv6'
+
+system_architecture: "{{ go_arch_map[ansible_architecture] | default(ansible_architecture) }}"
+
+systemd_lib_directory: /lib/systemd/system
+
+
+...

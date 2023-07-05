@@ -1,0 +1,24 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
+# {{ ansible_managed }}
+
+[Unit]
+Description       = Prometheus exporter for hardware and OS metrics exposed by *NIX kernels with pluggable metric collectors.
+After             = network-online.target
+
+[Service]
+Type              = simple
+Environment       = "GOMAXPROCS={{ ansible_processor_vcpus | default(ansible_processor_count) }}"
+EnvironmentFile   = {{ promcheck_defaults_directory }}/promcheck
+
+User              = {{ promcheck_system_user }}
+Group             = {{ promcheck_system_group }}
+
+ExecReload        = /bin/kill -HUP $MAINPID
+ExecStart         = /usr/bin/{{ promcheck_release.binary }} $OPTIONS
+
+LimitNOFILE       = 65000
+SyslogIdentifier  = promcheck
+Restart           = always
+
+[Install]
+WantedBy          = multi-user.target

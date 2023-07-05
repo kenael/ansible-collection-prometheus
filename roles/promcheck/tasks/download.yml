@@ -1,0 +1,136 @@
+---
+
+- name: get latest release
+  delegate_to: localhost
+  become: false
+  run_once: true
+  when:
+    - promcheck_version == "latest"
+  block:
+    - name: get latest release
+      delegate_to: localhost
+      become: false
+      run_once: true
+      bodsch.scm.github_latest:
+        project: cbrgm
+        repository: promcheck
+        user: "{{ lookup('env', 'GH_USER') | default(omit) }}"
+        password: "{{ lookup('env', 'GH_TOKEN') | default(omit) }}"
+      register: _latest_release
+
+    - name: re-define promcheck_version
+      ansible.builtin.set_fact:
+        promcheck_version: "{{ _latest_release.latest_release }}"
+
+- name: define download information
+  ansible.builtin.set_fact:
+    promcheck_release: "{{ promcheck_defaults_release | combine(promcheck_release, recursive=True) }}"
+
+- name: define delegate instance for download handling
+  ansible.builtin.set_fact:
+    promcheck_delegate_to: "{{ ansible_host }}"
+    promcheck_local_tmp_directory: "{{
+        lookup('env', 'CUSTOM_LOCAL_TMP_DIRECTORY') |
+        default('/var/cache/ansible/promcheck', true) }}/{{ promcheck_version }}"
+  when:
+    - promcheck_direct_download
+
+- name: create download directory
+  become: false
+  delegate_to: "{{ promcheck_delegate_to }}"
+  run_once: "{{ 'false' if promcheck_direct_download else 'true' }}"
+  ansible.builtin.file:
+    path: "{{ promcheck_local_tmp_directory }}"
+    state: directory
+    mode: 0750
+
+- name: detect the downloaded promcheck archive
+  become: false
+  delegate_to: "{{ promcheck_delegate_to }}"
+  run_once: "{{ 'false' if promcheck_direct_download else 'true' }}"
+  ansible.builtin.stat:
+    path: "{{ promcheck_local_tmp_directory }}/{{ promcheck_release.file }}"
+  register: stat_promcheck_archive
+
+- name: download
+  when:
+    - stat_promcheck_archive.stat is defined
+    - not stat_promcheck_archive.stat.exists | default('false')
+  block:
+    # - name: checksum
+    #   become: false
+    #   delegate_to: localhost
+    #   run_once: true
+    #   block:
+    #     - name: get checksum list
+    #       bodsch.scm.github_checksum:
+    #         project: cbrgm
+    #         repository: promcheck
+    #         checksum_file: sha256sums.txt
+    #         user: "{{ lookup('env', 'GH_USER') | default(omit) }}"
+    #         password: "{{ lookup('env', 'GH_TOKEN') | default(omit) }}"
+    #         architecture: "{{ ansible_architecture }}"
+    #         system: "{{ ansible_facts.system }}"
+    #         version: "v{{ promcheck_version }}"
+    #       register: _latest_checksum
+    #
+    #     - name: define checksum for {{ system_architecture }} architecture
+    #       ansible.builtin.set_fact:
+    #         __promcheck_checksum: "sha256:{{ _latest_checksum.checksum }}"
+    #       when:
+    #         - _latest_checksum.rc == 0
+    #         - _latest_checksum.checksum is defined
+    #         - _latest_checksum.checksum | string | length > 0
+
+    - name: download promcheck binary archive
+      become: false
+      delegate_to: "{{ promcheck_delegate_to }}"
+      run_once: "{{ 'false' if promcheck_direct_download else 'true' }}"
+      ansible.builtin.get_url:
+        url: "{{ promcheck_release.download_url }}/download/v{{ promcheck_version }}/{{ promcheck_release.file }}"
+        dest: "{{ promcheck_local_tmp_directory }}/{{ promcheck_release.file }}"
+        checksum: "{{ __promcheck_checksum | default(omit) }}"
+        mode: 0640
+      register: _download_archive
+      until: _download_archive is succeeded
+      retries: 5
+      delay: 2
+      check_mode: false
+
+  rescue:
+    - name: delete download directory
+      become: false
+      delegate_to: "{{ promcheck_delegate_to }}"
+      run_once: "{{ 'false' if promcheck_direct_download else 'true' }}"
+      ansible.builtin.file:
+        path: "{{ promcheck_local_tmp_directory }}"
+        state: absent
+
+    - name: exit with fail
+      ansible.builtin.fail:
+        msg: A serious error occurred when downloading the archive.
+
+- name: detect extracted binary
+  become: false
+  delegate_to: "{{ promcheck_delegate_to }}"
+  run_once: "{{ 'false' if promcheck_direct_download else 'true' }}"
+  ansible.builtin.stat:
+    path: "{{ promcheck_local_tmp_directory }}/{{ promcheck_release.binary }}"
+  register: stat_promcheck_binary
+
+- name: extract promcheck archive
+  become: false
+  delegate_to: "{{ promcheck_delegate_to }}"
+  run_once: "{{ 'false' if promcheck_direct_download else 'true' }}"
+  ansible.builtin.unarchive:
+    src: "{{ promcheck_local_tmp_directory }}/{{ promcheck_release.file }}"
+    dest: "{{ promcheck_local_tmp_directory }}/"
+    copy: false
+    extra_opts:
+      - --strip-components=1
+  when:
+    - stat_promcheck_binary.stat is defined
+    - not stat_promcheck_binary.stat.exists | default('false')
+
+...
+

@@ -1,0 +1,36 @@
+---
+
+- name: check that the docker group is present
+  ansible.builtin.getent:
+    database: group
+    key: docker
+    fail_key: false
+  register: docker_sd_docker_group
+
+- name: add user {{ docker_sd_system_user }} to docker group
+  ansible.builtin.user:
+    name: "{{ docker_sd_system_user }}"
+    groups: docker
+    append: true
+    state: present
+  when:
+    - docker_sd_docker_group.ansible_facts.getent_group.docker is defined
+    - docker_sd_docker_group.ansible_facts.getent_group.docker
+
+- name: detect docker socket
+  ansible.builtin.stat:
+    path: /run/docker.sock
+  register: docker_sd_docker_socket
+
+- name: sets ACL for {{ docker_sd_system_user }} on /run/docker.sock
+  ansible.posix.acl:
+    path: /run/docker.sock
+    entity: "{{ docker_sd_system_user }}"
+    etype: user
+    permissions: rw
+    state: present
+  when:
+    - docker_sd_docker_socket.stat.exists is defined
+    - docker_sd_docker_socket.stat.exists
+
+...

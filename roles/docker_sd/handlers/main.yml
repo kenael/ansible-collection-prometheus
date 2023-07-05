@@ -1,0 +1,23 @@
+---
+
+- name: restart docker-sd
+  become: true
+  ansible.builtin.service:
+    name: docker-sd
+    state: restarted
+
+- name: reload docker-sd
+  become: true
+  ansible.builtin.service:
+    name: docker-sd
+    state: reloaded
+
+- name: daemon-reload
+  become: true
+  ansible.builtin.systemd:
+    daemon_reload: true
+    force: true
+  when:
+    - ansible_service_mgr | lower == "systemd"
+
+...

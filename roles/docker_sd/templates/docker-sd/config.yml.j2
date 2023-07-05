@@ -1,0 +1,52 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
+---
+# {{ ansible_managed }}
+
+{% if docker_sd_rest_api is defined and
+      docker_sd_rest_api | count > 0 %}
+rest_api:
+  {% if docker_sd_rest_api.port is defined and
+        docker_sd_rest_api.port | string | length > 0 %}
+  port: {{ docker_sd_rest_api.port }}
+  {% endif %}
+  {% if docker_sd_rest_api.address is defined and
+        docker_sd_rest_api.address | string | length > 0 %}
+  address: {{ docker_sd_rest_api.address }}
+  {% endif %}
+
+{% endif %}
+{% if docker_sd_hosts is defined and
+      docker_sd_hosts | count > 0 %}
+docker_hosts:
+  {% for h in docker_sd_hosts %}
+  - host: {{ h.host }}
+    {% if h.username is defined and
+          h.username | string | length >0 %}
+    username: {{ h.username }}
+    {% endif %}
+    {% if h.password is defined and
+          h.password | string | length >0 %}
+    password: {{ h.password }}
+    {% endif %}
+    {% if h.metrics_ports is defined and
+          h.metrics_ports | count > 0 %}
+    metrics_ports:
+      {% for k, v in h.metrics_ports.items() %}
+      {{ k }}: {{ v }}
+      {% endfor %}
+    {% endif %}
+  {% endfor %}
+
+{% endif %}
+{% if docker_sd_addition_labels is defined and
+      docker_sd_addition_labels | count > 0 %}
+docker_addition_labels:
+  {% for c in docker_sd_addition_labels %}
+  - container: {{ c.container }}
+    {% if c.labels is defined and
+          c.labels | count > 0 %}
+    # {{ c.labels }}
+    labels: []
+    {% endif %}
+  {% endfor %}
+{% endif %}

@@ -1,0 +1,22 @@
+{{ ansible_managed | comment }}
+
+[Unit]
+Description       = Prometheus service discovery for dockerd.
+After             = network-online.target
+
+[Service]
+Type              = simple
+Environment       = "GOMAXPROCS={{ ansible_processor_vcpus | default(ansible_processor_count) }}"
+EnvironmentFile   = {{ docker_sd_defaults_directory }}/docker-sd
+
+User              = {{ docker_sd_system_user }}
+Group             = {{ docker_sd_system_group }}
+
+ExecStart         = /usr/bin/{{ docker_sd_release.binary }} $OPTIONS
+
+SyslogIdentifier  = docker_sd
+Restart           = always
+RestartSec        = 10
+
+[Install]
+WantedBy          = multi-user.target

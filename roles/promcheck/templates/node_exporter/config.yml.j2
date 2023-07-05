@@ -1,0 +1,20 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
+---
+# {{ ansible_managed }}
+
+{% if promcheck_tls_server | length > 0 %}
+tls_server_config:
+{{ promcheck_tls_server | to_nice_yaml | indent(2, true) }}
+{% endif %}
+
+{% if promcheck_http_server | length > 0 %}
+http_server_config:
+{{ promcheck_http_server | to_nice_yaml | indent(2, true) }}
+{% endif %}
+
+{% if promcheck_basic_auth_users | length > 0 %}
+basic_auth_users:
+{% for k, v in promcheck_basic_auth_users.items() %}
+  {{ k }}: {{ v | password_hash('bcrypt', ('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890' | shuffle(seed=inventory_hostname) | join)[:22], rounds=9) }}
+{% endfor %}
+{% endif %}

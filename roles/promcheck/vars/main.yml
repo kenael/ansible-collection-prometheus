@@ -1,0 +1,33 @@
+---
+
+promcheck_main_version: "{{ promcheck_version[0:3] }}"
+
+promcheck_install_path: /usr/local/opt/promcheck/{{ promcheck_version }}
+
+promcheck_delegate_to: localhost
+
+promcheck_local_tmp_directory: "{{
+  lookup('env', 'CUSTOM_LOCAL_TMP_DIRECTORY') |
+  default(lookup('env', 'HOME') ~ '/.cache/ansible/promcheck', true) }}/{{ promcheck_version }}"
+
+promcheck_requirements:
+  - gzip
+
+promcheck_defaults_release:
+  download_url: https://github.com/cbrgm/promcheck/releases
+  file: promcheck_{{ ansible_system | lower }}_{{ system_architecture }}.tar.gz
+  binary: promcheck
+
+# ---------------------------------------------
+
+go_arch_map:
+  x86_64: 'amd64'
+  aarch64: 'arm64'
+  armv7l: 'armv7'
+
+system_architecture: "{{ go_arch_map[ansible_architecture] | default(ansible_architecture) }}"
+
+systemd_lib_directory: /lib/systemd/system
+
+
+...
