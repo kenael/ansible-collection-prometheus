@@ -1,11 +1,11 @@
 ---
 
-name: trickster with various configuration
+name: docker_sd with various configuration
 
 on:
   workflow_run:
     workflows:
-      - "trickster"
+      - "docker_sd"
     types:
       - completed
 
@@ -32,7 +32,7 @@ jobs:
           - configured
           - latest
         collection_role:
-          - trickster
+          - docker_sd
 
     steps:
       - name: check out the codebase.
