@@ -54,11 +54,9 @@
 
 - name: install and activate prometheus
   when:
-    - stat_prometheus_binary.stat is defined
-    - not stat_prometheus_binary.stat.exists | default('false')
-    - stat_prometheus_activated.stat is defined
-    - not stat_prometheus_activated.stat.exists | default('false')
-  block:
+    - (stat_prometheus_binary.stat is defined and not stat_prometheus_binary.stat.exists | default('false')) or
+      not stat_prometheus_activated.stat | bodsch.prometheus.linked_version(prometheus_install_path, prometheus_version)
+    block:
     - name: propagate files
       block:
         - name: propagate prometheus binaries
