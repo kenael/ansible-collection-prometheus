@@ -4,6 +4,8 @@ name: push to ansible galaxy
 
 on:
   workflow_run:
+    workflows:
+      - "CI"
     branches:
       - main
     types:
