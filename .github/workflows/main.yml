@@ -19,26 +19,12 @@ on:
       - 'feature/**'
       - 'fix/**'
       - '!doc/**'
-    paths:
-      - "!Makefile"
-      - "!README.md"
-      - 'roles/*/**'
-      - '.github/workflows/test_role_*.yml'
-      - '.config/ansible-lint.yml'
-      - '.yamllint'
   pull_request:
     branches:
       - 'main'
       - 'feature/**'
       - 'fix/**'
       - '!doc/**'
-    paths:
-      - "!Makefile"
-      - "!README.md"
-      - 'roles/*/**'
-      - '.github/workflows/test_role_*.yml'
-      - '.config/ansible-lint.yml'
-      - '.yamllint'
 
 env:
   COLLECTION_NAMESPACE: bodsch
