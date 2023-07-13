@@ -4,7 +4,7 @@ export TOX_ANSIBLE          ?= ansible_6.7
 
 export COLLECTION_NAMESPACE ?= bodsch
 export COLLECTION_NAME      ?= prometheus
-export COLLECTION_ROLE      ?= ""
+export COLLECTION_ROLE      ?=
 export COLLECTION_SCENARIO  ?= default
 
 .PHONY: install uninstall doc converge test destroy verify lint

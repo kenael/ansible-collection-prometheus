@@ -2,12 +2,12 @@
 
 . hooks/molecule.rc
 
-set -x
+# set -x
 set -e
 
 TOX_TEST="${1}"
 
-if [ -n "${COLLECTION_ROLE}" ]
+if [[ ! -z "${COLLECTION_ROLE// }" ]]
 then
   if [ -d "roles/${COLLECTION_ROLE}" ]
   then
