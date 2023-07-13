@@ -133,4 +133,3 @@
     - not stat_promcheck_binary.stat.exists | default('false')
 
 ...
-

@@ -6,9 +6,6 @@ __metaclass__ = type
 from ansible.utils.display import Display
 
 import datetime
-import dateutil.parser
-import time
-import sys
 
 display = Display()
 
@@ -16,6 +13,7 @@ display = Display()
 class FilterModule(object):
     """
     """
+
     def filters(self):
         return {
             "expired": self.expired,
@@ -39,8 +37,8 @@ class FilterModule(object):
         begin_date_time = current_date_time.isoformat()
 
         return dict(
-            begin = begin_date_time,
-            end = end_date_time
+            begin=begin_date_time,
+            end=end_date_time
         )
 
     def expired(self, data):

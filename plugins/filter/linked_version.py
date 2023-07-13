@@ -11,9 +11,7 @@ display = Display()
 
 class FilterModule(object):
     """
-        Ansible file jinja2 tests
     """
-
     def filters(self):
         return {
             'linked_version': self.linked_version,
@@ -27,7 +25,7 @@ class FilterModule(object):
         _exists = data.get("exists", False)
 
         if _exists:
-            _islink = data.get("islink", False)
+            # _islink = data.get("islink", False)
             _lnk_source = data.get("lnk_source", None)
             _path = data.get("path", False)
 
@@ -46,4 +44,3 @@ class FilterModule(object):
             return state
         else:
             return True
-

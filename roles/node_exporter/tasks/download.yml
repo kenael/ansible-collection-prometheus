@@ -133,4 +133,3 @@
     - not stat_node_exporter_binary.stat.exists | default('false')
 
 ...
-

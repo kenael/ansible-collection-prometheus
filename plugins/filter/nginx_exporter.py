@@ -28,12 +28,10 @@ class FilterModule(object):
 
         result = []
 
-        for k,v in data.items():
+        for k, v in data.items():
             result.append(f"{k}={v}")
 
         result = ",".join(result)
         display.v(f"= result: {result}")
 
         return result
-
-
