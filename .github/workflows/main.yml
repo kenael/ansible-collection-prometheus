@@ -39,11 +39,6 @@ on:
       - '.github/workflows/test_role_*.yml'
       - '.config/ansible-lint.yml'
       - '.yamllint'
-  workflow_run:
-    workflows:
-      - "code linter"
-    types:
-      - completed
 
 env:
   COLLECTION_NAMESPACE: bodsch
