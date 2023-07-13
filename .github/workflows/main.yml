@@ -1,11 +1,13 @@
 ---
-
-name: json_exporter with various configuration
+name: CI
 
 on:
+  schedule:
+    - cron: "0 4 * * 0"
+  workflow_dispatch:
   workflow_run:
     workflows:
-      - "json_exporter"
+      - "code linter"
     types:
       - completed
 
@@ -13,9 +15,13 @@ env:
   COLLECTION_NAMESPACE: bodsch
   COLLECTION_NAME: prometheus
 
+defaults:
+  run:
+    working-directory: 'ansible-collection-core'
+
 jobs:
   deb:
-    name: "${{ matrix.image }} / ${{ matrix.scenario }} / ${{ matrix.ansible-version }} / ${{ matrix.python_version }}"
+    name: "${{ matrix.image }} / ansible: ${{ matrix.ansible-version }}"
     runs-on: ubuntu-20.04
     if: ${{ github.event_name == 'schedule' || github.event.workflow_run.conclusion == 'success' }}
     strategy:
@@ -24,26 +30,22 @@ jobs:
         image:
           - debian:11
         ansible-version:
+          - '5.10'
           - '6.7'
-        python_version:
-          - "3.10.11"
-          - "3.11.3"
+          - '7.0'
         scenario:
-          - configured
-          - latest
-        collection_role:
-          - json_exporter
+          - default
 
     steps:
       - name: check out the codebase.
         uses: actions/checkout@v3
         with:
-          ref: ${{ github.event.workflow_run.head_branch }}
+          path: 'ansible-collection-core'
 
       - name: 🐍 set up python
         uses: actions/setup-python@v4
         with:
-          python-version: "${{ matrix.python_version }}"
+          python-version: '3.x'
 
       - name: install dependencies
         run: |
@@ -52,17 +54,13 @@ jobs:
 
       - name: Install collection
         run: |
-          make \
-            install
+          mkdir -p ~/.ansible/collections/ansible_collections/$COLLECTION_NAMESPACE
+          cp -a ../ansible-collection-$COLLECTION_NAME ~/.ansible/collections/ansible_collections/$COLLECTION_NAMESPACE/$COLLECTION_NAME
 
-      - name: test ${{ matrix.collection_role }} - ${{ matrix.scenario }}
+      - name: test with tox
         run: |
-          make \
-            test \
-              -e TOX_ANSIBLE="ansible_${{ matrix.ansible-version }}" \
-              -e DISTRIBUTION="${{ matrix.image }}" \
-              -e COLLECTION_ROLE="${{ matrix.collection_role }}" \
-              -e COLLECTION_SCENARIO="${{ matrix.scenario }}"
+          tox -e ansible_$(printf "${{ matrix.ansible-version }}") \
+            -- molecule test --scenario-name default
         env:
           PY_COLORS: '1'
           ANSIBLE_FORCE_COLOR: '1'
