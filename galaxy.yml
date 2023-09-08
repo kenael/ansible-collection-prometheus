@@ -23,7 +23,7 @@ tags:
   - exporters
 
 dependencies:
-  bodsch.core: ">=1.0.18"
+  bodsch.core: ">=1.1.1"
   bodsch.scm: "*"
 
 repository: https://github.com/bodsch/ansible-collection-prometheus
