@@ -3,7 +3,7 @@
 namespace: bodsch
 name: prometheus
 
-version: 0.9.7
+version: 0.9.8
 
 readme: README.md
 
@@ -23,7 +23,7 @@ tags:
   - exporters
 
 dependencies:
-  bodsch.core: ">=1.0.18"
+  bodsch.core: ">=1.1.2"
   bodsch.scm: "*"
 
 repository: https://github.com/bodsch/ansible-collection-prometheus
