@@ -1,0 +1,150 @@
+---
+
+- name: user and group handling
+  when:
+    - mongodb_exporter_system_user != "root"
+  block:
+    - name: create mongodb_exporter group
+      ansible.builtin.group:
+        name: "{{ mongodb_exporter_system_group }}"
+        state: present
+        system: true
+
+    - name: create mongodb_exporter user
+      ansible.builtin.user:
+        name: "{{ mongodb_exporter_system_user }}"
+        groups: "{{ mongodb_exporter_system_group }}"
+        append: true
+        shell: /usr/sbin/nologin
+        system: true
+        createhome: false
+        home: /nonexistent
+
+- name: create install directory
+  ansible.builtin.file:
+    path: "{{ mongodb_exporter_install_path }}"
+    state: directory
+    owner: "{{ mongodb_exporter_system_user }}"
+    group: "{{ mongodb_exporter_system_group }}"
+    mode: 0755
+
+- name: detect extracted binary file for mongodb_exporter on '{{ mongodb_exporter_delegate_to }}'
+  become: false
+  delegate_to: "{{ mongodb_exporter_delegate_to }}"
+  run_once: "{{ 'false' if mongodb_exporter_direct_download else 'true' }}"
+  ansible.builtin.stat:
+    path: "{{ mongodb_exporter_local_tmp_directory }}/mongodb_exporter"
+  register: stat_file_binary
+
+- name: fail when extracted binary are missing
+  ansible.builtin.fail:
+    msg: "missing extracted binary on ansible controller"
+  when:
+    - not stat_file_binary.stat.exists
+
+- name: detect installed mongodb_exporter binary
+  ansible.builtin.stat:
+    path: "{{ mongodb_exporter_install_path }}/{{ mongodb_exporter_release.binary }}"
+  register: stat_mongodb_exporter_binary
+
+- name: detect activated mongodb_exporter binary
+  ansible.builtin.stat:
+    path: /usr/bin/{{ mongodb_exporter_release.binary }}
+  register: stat_mongodb_exporter_activated
+
+- name: install and activate mongodb_exporter
+  when:
+    - (stat_mongodb_exporter_binary.stat is defined and not stat_mongodb_exporter_binary.stat.exists | default('false')) or
+      not stat_mongodb_exporter_activated.stat | bodsch.prometheus.linked_version(mongodb_exporter_install_path, mongodb_exporter_version)
+  block:
+    - name: propagate files
+      block:
+        - name: propagate mongodb_exporter binary
+          ansible.builtin.copy:
+            src: "{{ mongodb_exporter_local_tmp_directory }}/{{ mongodb_exporter_release.binary }}"
+            dest: "{{ mongodb_exporter_install_path }}/{{ mongodb_exporter_release.binary }}"
+            mode: 0755
+            owner: "{{ mongodb_exporter_system_user }}"
+            group: "{{ mongodb_exporter_system_group }}"
+            remote_src: "{{ 'true' if mongodb_exporter_direct_download else 'false' }}"
+
+        - name: make files executable
+          ansible.builtin.file:
+            path: "{{ mongodb_exporter_install_path }}/{{ mongodb_exporter_release.binary }}"
+            mode: 0755
+            owner: "{{ mongodb_exporter_system_user }}"
+            group: "{{ mongodb_exporter_system_group }}"
+
+        - name: create link to binary
+          ansible.builtin.file:
+            src: "{{ mongodb_exporter_install_path }}/{{ mongodb_exporter_release.binary }}"
+            dest: /usr/bin/{{ mongodb_exporter_release.binary }}
+            state: link
+            force: true
+            follow: false
+          notify:
+            - restart mongodb exporter
+
+      rescue:
+        - name: delete install directory
+          ansible.builtin.file:
+            path: "{{ mongodb_exporter_install_path }}"
+            state: absent
+
+        - name: exit with fail
+          ansible.builtin.fail:
+            msg: A serious error occurred during the installation of the binary.
+
+- name: systemd
+  when:
+    - ansible_service_mgr | lower == "systemd"
+  block:
+    - name: create mongodb_exporter run configuration
+      ansible.builtin.template:
+        src: "default/mongodb_exporter.j2"
+        dest: "{{ mongodb_exporter_defaults_directory }}/mongodb_exporter"
+        force: true
+        owner: root
+        group: "{{ mongodb_exporter_system_group }}"
+        mode: 0640
+      notify:
+        - restart mongodb exporter
+
+    - name: create systemd service unit
+      ansible.builtin.template:
+        src: "init/systemd/mongodb_exporter.service.j2"
+        dest: "{{ systemd_lib_directory }}/mongodb_exporter.service"
+        owner: root
+        group: root
+        mode: 0644
+      notify:
+        - daemon-reload
+        - restart mongodb exporter
+
+- name: openrc
+  when:
+    - ansible_service_mgr | lower == "openrc"
+  block:
+    - name: create openrc service configuration
+      ansible.builtin.template:
+        src: "init/openrc/conf.d/mongodb_exporter.j2"
+        dest: "/etc/conf.d/mongodb_exporter"
+        owner: root
+        group: root
+        mode: 0644
+
+    - name: create openrc init configuration
+      ansible.builtin.template:
+        src: "init/openrc/init.d/mongodb_exporter.j2"
+        dest: "/etc/init.d/mongodb_exporter"
+        owner: root
+        group: root
+        mode: 0750
+
+- name: create custom fact file
+  bodsch.core.facts:
+    name: mongodb_exporter
+    facts:
+      version: "{{ mongodb_exporter_version }}"
+
+...

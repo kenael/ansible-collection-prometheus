@@ -1,0 +1,23 @@
+---
+
+- name: create mongodb_exporter configuration directories
+  ansible.builtin.file:
+    path: "{{ mongodb_exporter_config_dir }}"
+    state: directory
+    owner: root
+    group: "{{ mongodb_exporter_system_group }}"
+    mode: 0775
+
+- name: create mongodb credentials file
+  ansible.builtin.template:
+    src: my.cnf.j2
+    dest: "{{ mongodb_exporter_service.config.my_cnf }}"
+    owner: root
+    group: "{{ mongodb_exporter_system_group }}"
+    mode: 0666
+  no_log: true
+  when:
+    - mongodb_exporter_service.config.my_cnf is defined
+    - mongodb_exporter_service.config.my_cnf | string | length > 0
+
+...

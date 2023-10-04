@@ -1,0 +1,169 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
+# {{ ansible_managed }}
+
+{% set _loglevel = "info" %}
+{% set valid_collector = [] %}
+
+OPTIONS="
+{% if mongodb_exporter_service is defined %}
+  {% if mongodb_exporter_service.log.level in ["debug", "info", "warn", "error"] %}
+    {% set _loglevel = mongodb_exporter_service.log.level %}
+  {% endif %}
+  --log.level {{ _loglevel }} \
+  {% if mongodb_exporter_service.log.format is defined and
+        mongodb_exporter_service.log.format in ["logfmt", "json"] %}
+  --log.format {{ mongodb_exporter_service.log.format }} \
+  {% endif %}
+  {# web configuration #}
+  {% if mongodb_exporter_service.web.listen_address is defined and
+        mongodb_exporter_service.web.listen_address | string | length > 0 %}
+  --web.listen-address {{ mongodb_exporter_service.web.listen_address }} \
+  {% endif %}
+  {% if mongodb_exporter_service.web.telemetry_path is defined and
+        mongodb_exporter_service.web.telemetry_path | string | length > 0 %}
+  --web.telemetry-path {{ mongodb_exporter_service.web.telemetry_path }} \
+  {% endif %}
+  {% if mongodb_exporter_service.web.config is defined and
+        mongodb_exporter_service.web.config | string | length > 0 %}
+  --web.config {{ mongodb_exporter_service.web.config }} \
+  {% endif %}
+  {# mongodb #}
+  {% if mongodb_exporter_service.mongodb.collstats_colls is defined and
+        mongodb_exporter_service.mongodb.collstats_colls | count > 0 %}
+  --mongodb.collstats-colls {{ mongodb_exporter_service.mongodb.collstats_colls | join(',') }} \
+  {% endif %}
+  {% if mongodb_exporter_service.mongodb.indexstats_colls is defined and
+        mongodb_exporter_service.mongodb.indexstats_colls | count > 0 %}
+  --mongodb.indexstats-colls={{ mongodb_exporter_service.mongodb.indexstats_colls | join(',') }} \
+  {% endif %}
+  {% if mongodb_exporter_service.mongodb.uri is defined and
+        mongodb_exporter_service.mongodb.uri | string | length > 0 %}
+  --mongodb.uri {{ mongodb_exporter_service.mongodb.uri }} \
+  {% endif %}
+  {% if mongodb_exporter_service.mongodb.global_conn_pool is defined and
+        mongodb_exporter_service.mongodb.global_conn_pool | string | length > 0 %}
+    {% if mongodb_exporter_service.mongodb.global_conn_pool %}
+  --mongodb.global-conn-pool \
+    {% else %}
+  --no-mongodb.global-conn-pool \
+    {% endif %}
+  {% endif %}
+  {% if mongodb_exporter_service.mongodb.direct_connect is defined and
+        mongodb_exporter_service.mongodb.direct_connect | string | length > 0 %}
+    {% if mongodb_exporter_service.mongodb.direct_connect %}
+  --mongodb.direct-connect \
+    {% else %}
+  --no-mongodb.direct-connect \
+    {% endif %}
+  {% endif %}
+  {# collector #}
+  {% if mongodb_exporter_service.collector_all is defined and
+        mongodb_exporter_service.collector_all | string | length > 0 and
+        mongodb_exporter_service.collector_all %}
+  --collect-all \
+  {% else %}
+    {% if mongodb_exporter_service.collector.diagnosticdata is defined and
+          mongodb_exporter_service.collector.diagnosticdata | string | length > 0 and
+          mongodb_exporter_service.collector.diagnosticdata %}
+  --collector.diagnosticdata \
+    {% endif %}
+    {% if mongodb_exporter_service.collector.replicasetstatus is defined and
+          mongodb_exporter_service.collector.replicasetstatus | string | length > 0 and
+          mongodb_exporter_service.collector.replicasetstatus %}
+  --collector.replicasetstatus \
+    {% endif %}
+    {% if mongodb_exporter_service.collector.dbstats is defined and
+          mongodb_exporter_service.collector.dbstats | string | length > 0 and
+          mongodb_exporter_service.collector.dbstats %}
+  --collector.dbstats \
+    {% endif %}
+    {% if mongodb_exporter_service.collector.topmetrics is defined and
+          mongodb_exporter_service.collector.topmetrics | string | length > 0 and
+          mongodb_exporter_service.collector.topmetrics %}
+  --collector.topmetrics \
+    {% endif %}
+    {% if mongodb_exporter_service.collector.indexstats is defined and
+          mongodb_exporter_service.collector.indexstats | string | length > 0 and
+          mongodb_exporter_service.collector.indexstats %}
+  --collector.indexstats \
+    {% endif %}
+    {% if mongodb_exporter_service.collector.collstats is defined and
+          mongodb_exporter_service.collector.collstats | string | length > 0 and
+          mongodb_exporter_service.collector.collstats %}
+  --collector.collstats \
+    {% endif %}
+  {% endif %}
+  {% if mongodb_exporter_service.collector.collstats_limit is defined and
+        mongodb_exporter_service.collector.collstats_limit | string | length > 0 and
+        mongodb_exporter_service.collector.collstats_limit %}
+  --collector.collstats-limit {{ mongodb_exporter_service.collector.collstats_limit }} \
+  {% endif %}
+  {% if mongodb_exporter_service.discovering_mode is defined and
+        mongodb_exporter_service.discovering_mode | string | length > 0 %}
+    {% if mongodb_exporter_service.discovering_mode %}
+  --discovering-mode \
+    {% else %}
+  --no-discovering-mode \
+    {% endif %}
+  {% endif %}
+  {% if mongodb_exporter_service.mongodb.compatible_mode is defined and
+        mongodb_exporter_service.mongodb.compatible_mode | string | length > 0 %}
+    {% if mongodb_exporter_service.mongodb.compatible_mode %}
+  --compatible-mode \
+    {% else %}
+  --no-compatible-mode \
+    {% endif %}
+  {% endif %}
+  {# metrics #}
+  {% if mongodb_exporter_service.metrics.overridedescendingindex is defined and
+        mongodb_exporter_service.metrics.overridedescendingindex | string | length > 0 and
+        mongodb_exporter_service.metrics.overridedescendingindex %}
+  --metrics.overridedescendingindex \
+  {% endif %}
+  {# raw flags #}
+  {% if mongodb_exporter_service.raw_flags is defined %}
+    {% for flag, flag_value in mongodb_exporter_service.raw_flags.items() %}
+      {% if not flag_value %}
+  --{{ flag }} \
+      {% elif flag_value is string %}
+  --{{ flag }} {{ flag_value }} \
+      {% elif flag_value is sequence %}
+        {% for flag_value_item in flag_value %}
+  --{{ flag }} {{ flag_value_item }} \
+        {% endfor %}
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+{% endif %}
+"
+{#
+# mongodb_exporter --help
+Usage: mongodb_exporter
+mongodb.global-conn-pool
+MongoDB Prometheus exporter
+
+Flags:
+  -h, --help                                                              Show context-sensitive help.
+      --mongodb.collstats-colls=db1,db2.col2                              List of comma separared databases.collections to get $collStats
+      --mongodb.indexstats-colls=db1.col1,db2.col2                        List of comma separared databases.collections to get $indexStats
+      --mongodb.uri=mongodb://user:pass@127.0.0.1:27017/admin?ssl=true    MongoDB connection URI ($MONGODB_URI)
+      --[no-]mongodb.global-conn-pool                                     Use global connection pool instead of creating new pool for each http request.
+      --[no-]mongodb.direct-connect                                       Whether or not a direct connect should be made. Direct connections are not valid if multiple hosts are specified or
+                                                                          an SRV URI is used.
+      --web.listen-address=":9216"                                        Address to listen on for web interface and telemetry
+      --web.telemetry-path="/metrics"                                     Metrics expose path
+      --web.config=STRING                                                 Path to the file having Prometheus TLS config for basic auth
+      --log.level="error"                                                 Only log messages with the given severity or above. Valid levels: [debug, info, warn, error, fatal]
+      --collector.diagnosticdata                                          Enable collecting metrics from getDiagnosticData
+      --collector.replicasetstatus                                        Enable collecting metrics from replSetGetStatus
+      --collector.dbstats                                                 Enable collecting metrics from dbStats
+      --collector.topmetrics                                              Enable collecting metrics from top admin command
+      --collector.indexstats                                              Enable collecting metrics from $indexStats
+      --collector.collstats                                               Enable collecting metrics from $collStats
+      --metrics.overridedescendingindex                                   Enable descending index name override to replace -1 with _DESC
+      --collect-all                                                       Enable all collectors. Same as specifying all --collector.<name>
+      --collector.collstats-limit=0                                       Disable collstats, dbstats, topmetrics and indexstats collector if there are more than <n> collections. 0=No limit
+      --[no-]discovering-mode                                             Enable autodiscover collections
+      --[no-]compatible-mode                                              Enable old mongodb-exporter compatible metrics
+      --version                                                           Show version and exit
+#}

@@ -1,0 +1,53 @@
+---
+
+- name: include OS specific configuration ({{ ansible_distribution }} ({{ ansible_os_family }}) {{ ansible_distribution_major_version }})
+  ansible.builtin.include_vars: "{{ lookup('first_found', params) }}"
+  vars:
+    params:
+      paths:
+        - "vars"
+      files:
+        # eg. debian-10 / ubuntu-20.04 / centos-8 / oraclelinux-8
+        - "{{ ansible_distribution | lower }}-{{ ansible_distribution_major_version }}.yml"
+        # eg. archlinux-systemd / archlinux-openrc
+        - "{{ ansible_distribution | lower }}-{{ ansible_service_mgr | lower }}.yml"
+        # eg. debian / ubuntu / centos / oraclelinux
+        - "{{ ansible_distribution | lower }}.yml"
+        # eg. redhat / debian / archlinux
+        - "{{ ansible_os_family | lower }}.yml"
+        # artixlinux
+        - "{{ ansible_os_family | lower | replace(' ', '') }}.yml"
+        - default.yaml
+      skip: true
+
+- name: install dependency
+  ansible.builtin.package:
+    name: "{{ mongodb_exporter_requirements }}"
+    state: present
+  when:
+    - mongodb_exporter_requirements | default([]) | count > 0
+
+- name: merge mongodb_exporter configuration between defaults and custom
+  ansible.builtin.set_fact:
+    mongodb_exporter_service: "{{ mongodb_exporter_defaults_service | combine(mongodb_exporter_service, recursive=True) }}"
+    mongodb_exporter_credentials: "{{ mongodb_exporter_defaults_credentials | combine(mongodb_exporter_credentials, recursive=True) | bodsch.prometheus.has_credentials }}"
+
+- name: warn if no database credentials have been configured.
+  when:
+    - mongodb_exporter_credentials | default({}) | count == 0
+  block:
+    - name: warn if no database credentials have been configured.
+      ansible.builtin.fail:
+        msg: |
+          No database credentials have been configured.
+          Therefore, it cannot be guaranteed that the exporter will work as expected.
+
+          From a security point of view, it makes sense to create and use appropriate credentials.
+      ignore_errors: true
+
+    - name: wait 5 seconds to realise the message
+      delegate_to: localhost
+      ansible.builtin.wait_for:
+        timeout: 5
+
+...

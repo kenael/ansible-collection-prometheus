@@ -4,20 +4,21 @@ Documentation for the collection.
 
 ## Roles
 
-| Role | | Description |
-| :---- | :---- | :---- |
-| [bodsch.prometheus.alertmanager](./roles/alertmanager/README.md)            |       |       |
-| [bodsch.prometheus.am_silence](./roles/am_silence/README.md)                |       |       |
-| [bodsch.prometheus.blackbox_exporter](./roles/blackbox_exporter/README.md)  |       |       |
-| [bodsch.prometheus.docker_sd](./roles/docker_sd/README.md)                  |       |       |
-| [bodsch.prometheus.json_exporter](./roles/json_exporter/README.md)          |       |       |
-| [bodsch.prometheus.mysql_exporter](./roles/mysql_exporter/README.md)        |       |       |
-| [bodsch.prometheus.nginx_exporter](./roles/nginx_exporter/README.md)        |       |       |
-| [bodsch.prometheus.node_exporter](./roles/node_exporter/README.md)          |       |       |
-| [bodsch.prometheus.promcheck](./roles/promcheck/README.md)                  |       |       |
-| [bodsch.prometheus.prometheus](./roles/prometheus/README.md)                |       |       |
-| [bodsch.prometheus.pushgateway](./roles/pushgateway/README.md)              |       |       |
-| [bodsch.prometheus.trickster](./roles/trickster/README.md)                  |       |       |
+| Role                                                                       | | Description |
+|:---------------------------------------------------------------------------| :---- | :---- |
+| [bodsch.prometheus.alertmanager](./roles/alertmanager/README.md)           |       |       |
+| [bodsch.prometheus.am_silence](./roles/am_silence/README.md)               |       |       |
+| [bodsch.prometheus.blackbox_exporter](./roles/blackbox_exporter/README.md) |       |       |
+| [bodsch.prometheus.docker_sd](./roles/docker_sd/README.md)                 |       |       |
+| [bodsch.prometheus.json_exporter](./roles/json_exporter/README.md)         |       |       |
+| [bodsch.prometheus.mysql_exporter](./roles/mysql_exporter/README.md)       |       |       |
+| [bodsch.prometheus.nginx_exporter](./roles/nginx_exporter/README.md)       |       |       |
+| [bodsch.prometheus.node_exporter](./roles/node_exporter/README.md)         |       |       |
+| [bodsch.prometheus.mongodb_exporter](./roles/mongodb_exporter/README.md)   |       |       |
+| [bodsch.prometheus.promcheck](./roles/promcheck/README.md)                 |       |       |
+| [bodsch.prometheus.prometheus](./roles/prometheus/README.md)               |       |       |
+| [bodsch.prometheus.pushgateway](./roles/pushgateway/README.md)             |       |       |
+| [bodsch.prometheus.trickster](./roles/trickster/README.md)                 |       |       |
 
 ## Modules
 

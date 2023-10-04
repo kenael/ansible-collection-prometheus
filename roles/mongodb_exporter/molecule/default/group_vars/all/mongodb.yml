@@ -1,0 +1,69 @@
+---
+# 'pymongo driver version and MongoDB version are incompatible
+# you must use pymongo 3.9+ with MongoDB >= 4.2'
+# mongodb_version: "4.2"
+mongodb_pymongo_pip_version: 3.9
+
+mongodb_net_maxconns: 1024
+
+mongodb_user_update_password: "on_create"        # MongoDB user password update default policy
+
+mongodb_disable_transparent_hugepages: true
+
+mongodb_net_bindip: "127.0.0.1,{{ ansible_default_ipv4.address }}"        # Comma separated list of ip addresses to listen on
+
+mongodb_storage_dirperdb: true                  # Use one directory per DB
+
+## security Options
+# Disable or enable security. Possible values: 'disabled', 'enabled'
+mongodb_security_authorization: "enabled"
+mongodb_users:
+  - name: coremedia
+    password: "{{ vault__mongodb.coremedia }}"
+    roles: [
+      { db: 'coremedia' , role: 'dbOwner' },
+      { db: 'admin' , role: 'readWriteAnyDatabase' },
+      { db: 'admin' , role: 'dbAdminAnyDatabase' },
+    ]
+    database: coremedia
+
+  - name: monitoring
+    password: "{{ vault__mongodb.monitoring }}"
+    roles: [
+      { db: 'monitoring' , role: 'readWrite' },
+      { db: 'monitoring' , role: 'dbAdmin' },
+      { db: 'test' , role: 'readWrite' },
+      { db: 'test' , role: 'dbAdmin' },
+      { db: 'admin', role: 'read' },
+      { db: 'admin', role: 'backup' }
+    ]
+    database: monitoring
+
+mongodb_keyfile_content: |
+  avB2SAADKAbTGKDBpHY+IGXCbrAKrZurPfCEqTtY/2TKx4LT+yPoDREz1E5Gtu6n
+  zBlqEHVyGc1u3pR9mOhcAwtTwNIxOiCeBbJblHikUPGucl4Z/G6BLUa9uD1Tce4G
+  daGzWjc8nH8fjuFiBFhWTLN888AEWH/4jLqW0MpEaaLHAutGMszqhLAn0DdPEbR7
+  8TlaHagIhD2hBifvHvm6BmT72aF+xfBTKCfoOrRxA/CDtbmHiaOzczUWqU5s+mw9
+  CCk7gnUSZ+5v+GQfbERCpF8giSxeYjGbhnxlsidOGds3l4m8g3cnd5nh8wWwftPE
+  r9o2q++wTX8n+86PDxPxFBIDsPL/Y0K45SNGWFqtNRxuQxVQ9mT2cl7hXiEFUzaS
+  sGbCrTmiLumr5kfepEpKL4n9uiErwP5coyOOjx8bSSm4IDYIz825DiyhJJAh5Qm+
+  8uek7VGY0CVd0pvVq4M5bY9Kp4k+OHxL6RXOlErtm5j1uKkWiP84nKeiopYvFo6L
+  aKEtNHQrSRYutTizi3Nb+VRQjxsMcmTz1aJYE/jEvavquWmf9adbfh1myudrens7
+  BBZtIS8YA3hRt/DbFHJ+xjPefPpeDiliryxIUa4Imh5en4bVk7XkkuMMWtVrOAVw
+  UYDbhDKqx9lUMPK/+3S9VKPXNrvLNEAlzSbp6UxdJS1IhyC44CHw5ACN3uCG4jP1
+  WujffGGBRULmhu6l2ILU7PsljrpyCNhrGSFqSWynxq7qS2fHyxEUOE63ZwBHWwkg
+  JFxk/r1PW3GFjWDpYlhu196JScn/WVpmznKe94eFns4pYb4wmkV4MFRfVnTdFWv+
+  a+326HAOefo4fUuRPLMBNQCpKBsfhVlcjkR0uFzjHuP4UI0GzgGck7mV6cjIdHGU
+  nqB+xWGOwZaCVbx6hxgbRdju/r4w3Wvw/wsei/QZ+LV+1T7N666gupb030erIalN
+  ivEl5ybPZy07GrNvvp9m9L64ehYa
+
+# names and passwords for administrative users
+mongodb_user_admin_name: siteUserAdmin
+mongodb_user_admin_password: "{{ vault__mongodb.coremedia }}"
+
+mongodb_root_admin_name: siteRootAdmin
+mongodb_root_admin_password: "{{ vault__mongodb.coremedia }}"
+
+mongodb_root_backup_name: backupuser
+mongodb_root_backup_password: "{{ vault__mongodb.coremedia }}"
+...
