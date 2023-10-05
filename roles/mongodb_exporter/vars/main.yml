@@ -42,23 +42,23 @@ mongodb_exporter_defaults_service:
     config: ""
   collector_all: ""                         # [true|false]
   collector:
-    diagnosticdata: ""
-    replicasetstatus: ""
-    dbstats: ""
-    topmetrics: ""
-    indexstats: ""
-    collstats: ""
+    diagnosticdata: ""                      # [true|false]
+    replicasetstatus: ""                    # [true|false]
+    dbstats: ""                             # [true|false]
+    topmetrics: ""                          # [true|false]
+    indexstats: ""                          # [true|false]
+    collstats: ""                           # [true|false]
     collstats_limit: ""                     # 0
   metrics:
-    overridedescendingindex: ""
+    overridedescendingindex: ""             # [true|false]
   mongodb:
-    collstats_colls: []
-    indexstats_colls: []
+    collstats_colls: []                     #
+    indexstats_colls: []                    #
     uri: "mongodb://user:pass@127.0.0.1:27017/admin?ssl=true"
-    global_conn_pool: ""
-    direct_connect: ""
-  discovering_mode: ""                      #
-  compatible_mode: ""                       #
+    global_conn_pool: ""                    # [true|false]
+    direct_connect: ""                      # [true|false]
+  discovering_mode: ""                      # [true|false]
+  compatible_mode: ""                       # [true|false]
   raw_flags: {}
 
 # ------------------------------------------------------------------------

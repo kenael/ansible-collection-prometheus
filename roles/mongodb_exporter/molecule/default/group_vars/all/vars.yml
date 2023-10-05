@@ -5,14 +5,6 @@ mongodb_exporter_service:
     # debug, info, warn, error, fatal
     level: warn
   web:
-    listen_address: "127.0.0.1:9104"
-
-mongodb_exporter_credentials:
-  client:
-    hostname: "127.0.0.1"
-    port: 3306
-    socket: "/run/mongodb/mongodb.sock"
-    username: "monitoring"
-    password: "8WOMmRWWYHPR"
+    listen_address: "127.0.0.1:9216"
 
 ...

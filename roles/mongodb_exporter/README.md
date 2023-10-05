@@ -65,24 +65,16 @@ If you want to use something stable, please use a [Tagged Version](https://githu
 ## Configuration
 
 ```yaml
-mongodb_exporter_version: "0.14.0"
-
-mongodb_exporter_release_download_url: https://github.com/prometheus/mongodb_exporter/releases
+mongodb_exporter_version: "0.39.0"
 
 mongodb_exporter_system_user: mongodb_exporter
 mongodb_exporter_system_group: mongodb_exporter
 
 mongodb_exporter_direct_download: false
 
-mongodb_exporter_service: {}
+mongodb_exporter_release: {}
 
-mongodb_exporter_credentials:
-  client:
-    hostname: ""
-    port: ""
-    socket: ""
-    username: ""
-    password: ""
+mongodb_exporter_service: {}
 ```
 
 ### service configuration
@@ -93,38 +85,29 @@ mongodb_exporter_service:
     level: info
     format: ""
   web:
-    listen_address: "127.0.0.1:9104"
+    listen_address: "127.0.0.1:9216"
     telemetry_path: /metrics
-  exporter:
-    lock_wait_timeout: ""                  # 2
-    log_slow_filter: ""                    # true | false
-  timeout_offset: ""                       # 0.25
+    config: ""
+  collector_all: ""                         # [true|false]
+  collector:
+    diagnosticdata: ""                      # [true|false]
+    replicasetstatus: ""                    # [true|false]
+    dbstats: ""                             # [true|false]
+    topmetrics: ""                          # [true|false]
+    indexstats: ""                          # [true|false]
+    collstats: ""                           # [true|false]
+    collstats_limit: ""                     # 0
+  metrics:
+    overridedescendingindex: ""             # [true|false]
+  mongodb:
+    collstats_colls: []                     #
+    indexstats_colls: []                    #
+    uri: "mongodb://user:pass@127.0.0.1:27017/admin?ssl=true"
+    global_conn_pool: ""                    # [true|false]
+    direct_connect: ""                      # [true|false]
+  discovering_mode: ""                      # [true|false]
+  compatible_mode: ""                       # [true|false]
   raw_flags: {}
-```
-
-### data source credentials
-
-Using UNIX domain sockets and authentication:
-
-
-```yaml
-mongodb_exporter_credentials:
-  client:
-    socket: "/run/mongodb/mongodb.sock"
-    username: "prometheus"
-    password: "nopassword"
-```
-
-or using a TCP connection and password authentication:
-
-```yaml
-mongodb_exporter_credentials:
-  client:
-    hostname: "hostname"
-    port: "3306"
-    socket: "dbname"
-    username: "prometheus"
-    password: "nopassword"
 ```
 
 ---

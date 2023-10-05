@@ -11,12 +11,4 @@ mongodb_exporter_release: {}
 
 mongodb_exporter_service: {}
 
-mongodb_exporter_credentials:
-  client:
-    hostname: ""
-    port: ""
-    socket: ""
-    username: ""
-    password: ""
-
 ...
