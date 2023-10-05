@@ -1,0 +1,76 @@
+---
+
+mongodb_exporter_main_version: "{{ mongodb_exporter_version[0:3] }}"
+
+mongodb_exporter_install_path: /usr/local/opt/mongodb_exporter/{{ mongodb_exporter_version }}
+
+mongodb_exporter_delegate_to: localhost
+
+mongodb_exporter_local_tmp_directory: "{{
+  lookup('env', 'CUSTOM_LOCAL_TMP_DIRECTORY') |
+  default(lookup('env', 'HOME') ~ '/.cache/ansible/mongodb_exporter', true) }}/{{ mongodb_exporter_version }}"
+
+mongodb_exporter_config_dir: /etc/mongodb_exporter
+
+mongodb_exporter_packages: []
+
+mongodb_exporter_requirements:
+  - iproute2
+
+mongodb_exporter_defaults_directory: /etc/default
+
+mongodb_exporter_defaults_release:
+  download_url: https://github.com/percona/mongodb_exporter/releases
+  file: mongodb_exporter-{{ mongodb_exporter_version }}.{{ ansible_system | lower }}-{{ system_architecture }}.tar.gz
+  binary: mongodb_exporter
+
+mongodb_exporter_defaults_credentials:
+  client:
+    hostname: ""
+    port: ""
+    socket: ""
+    username: ""
+    password: ""
+
+mongodb_exporter_defaults_service:
+  log:
+    level: info
+    format: ""
+  web:
+    listen_address: "127.0.0.1:9216"
+    telemetry_path: /metrics
+    config: ""
+  collector_all: ""                         # [true|false]
+  collector:
+    diagnosticdata: ""                      # [true|false]
+    replicasetstatus: ""                    # [true|false]
+    dbstats: ""                             # [true|false]
+    topmetrics: ""                          # [true|false]
+    indexstats: ""                          # [true|false]
+    collstats: ""                           # [true|false]
+    collstats_limit: ""                     # 0
+  metrics:
+    overridedescendingindex: ""             # [true|false]
+  mongodb:
+    collstats_colls: []                     #
+    indexstats_colls: []                    #
+    uri: "mongodb://user:pass@127.0.0.1:27017/admin?ssl=true"
+    global_conn_pool: ""                    # [true|false]
+    direct_connect: ""                      # [true|false]
+  discovering_mode: ""                      # [true|false]
+  compatible_mode: ""                       # [true|false]
+  raw_flags: {}
+
+# ------------------------------------------------------------------------
+
+go_arch_map:
+  x86_64: 'amd64'
+  aarch64: 'arm64'
+  armv7l: 'armv7'
+  armv6l: 'armv6'
+
+system_architecture: "{{ go_arch_map[ansible_architecture] | default(ansible_architecture) }}"
+
+systemd_lib_directory: /lib/systemd/system
+
+...

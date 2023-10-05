@@ -1,0 +1,14 @@
+---
+
+mongodb_exporter_version: "0.39.0"
+
+mongodb_exporter_system_user: mongodb_exporter
+mongodb_exporter_system_group: mongodb_exporter
+
+mongodb_exporter_direct_download: false
+
+mongodb_exporter_release: {}
+
+mongodb_exporter_service: {}
+
+...

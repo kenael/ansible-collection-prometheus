@@ -1,0 +1,7 @@
+---
+
+vault__mongodb:
+  coremedia: coremedia
+  monitoring: monitoring
+
+...

@@ -1,0 +1,41 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
+{{ ansible_managed | comment }}
+
+[Unit]
+Description             = Prometheus exporter for MongoDB
+Documentation           = https://github.com/percona/mongodb_exporter
+After                   = network-online.target
+StartLimitInterval      = 0
+StartLimitIntervalSec   = 0
+
+[Service]
+Type                    = simple
+EnvironmentFile         = {{ mongodb_exporter_defaults_directory }}/mongodb_exporter
+
+User                    = {{ mongodb_exporter_system_user }}
+Group                   = {{ mongodb_exporter_system_group }}
+
+ExecReload              = /bin/kill -HUP $MAINPID
+ExecStart               = /usr/bin/{{ mongodb_exporter_release.binary }} $OPTIONS
+
+SyslogIdentifier        = mongodb_exporter
+Restart                 = always
+RestartSec              = 15
+
+LockPersonality         = true
+NoNewPrivileges         = true
+MemoryDenyWriteExecute  = true
+PrivateTmp              = true
+ProtectHome             = true
+RemoveIPC               = true
+RestrictSUIDSGID        = true
+
+AmbientCapabilities     = CAP_NET_RAW
+ProtectControlGroups    = true
+ProtectKernelModules    = true
+ProtectKernelTunables   = yes
+ProtectSystem           = strict
+
+[Install]
+Alias             = mongodb-exporter.service
+WantedBy          = multi-user.target
