@@ -1,0 +1,40 @@
+---
+
+- name: define cron jobs
+  ansible.builtin.set_fact:
+    node_exporter_cron_enabled: "{{ node_exporter_collector_scripts | default([]) | bodsch.prometheus.cron_jobs(enabled=True) }}"
+    node_exporter_cron_disabled: "{{ node_exporter_collector_scripts | default([]) | bodsch.prometheus.cron_jobs(enabled=False) }}"
+
+- name: create crontab entry
+  ansible.builtin.cron:
+    state: present
+    name: ne_text-collector_{{ item.name }}
+    cron_file: ne_text-collector_{{ item.name }}
+    user: "{{ node_exporter_system_user }}"
+    minute: "{{ item.cron.minute | default('0') }}"
+    hour: "{{ item.cron.hour | default('*/1') }}"
+    job: "{{ item.cron.job }}"
+  loop: "{{ node_exporter_cron_enabled }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - node_exporter_cron_enabled is defined
+    - node_exporter_cron_enabled | count > 0
+
+- name: remove crontab entry
+  ansible.builtin.cron:
+    state: absent
+    name: ne_text-collector_{{ item.name }}
+    cron_file: ne_text-collector_{{ item.name }}
+    user: "{{ node_exporter_system_user }}"
+    minute: "{{ item.cron.minute | default('0') }}"
+    hour: "{{ item.cron.hour | default('*/1') }}"
+    job: "{{ item.cron.job }}"
+  loop: "{{ node_exporter_cron_disabled }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - node_exporter_cron_disabled is defined
+    - node_exporter_cron_disabled | count > 0
+
+...

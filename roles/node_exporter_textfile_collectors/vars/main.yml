@@ -1,0 +1,14 @@
+---
+
+node_exporter_install_path: /usr/local/opt/node_exporter
+
+node_exporter_delegate_to: localhost
+
+node_exporter_local_tmp_directory: "{{
+  lookup('env', 'CUSTOM_LOCAL_TMP_DIRECTORY') |
+  default(lookup('env', 'HOME') ~ '/.cache/ansible/node_exporter_collector_scripts', true) }}"
+
+node_exporter_requirements:
+  - file
+
+...

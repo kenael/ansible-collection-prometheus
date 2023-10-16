@@ -1,11 +1,11 @@
 ---
 
 galaxy_info:
-  role_name: node_exporter
+  role_name: node_exporter_textfile_collectors
   namespace: bodsch
 
   author: Bodo Schulz
-  description: ansible role to setup node_exporter
+  description: add some helper scripts for node_exporter
 
   license: Apache
   min_ansible_version: "2.9"

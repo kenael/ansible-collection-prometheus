@@ -1,0 +1,116 @@
+---
+
+- name: create directory for collector scripts
+  ansible.builtin.file:
+    state: directory
+    path: "{{ node_exporter_install_path }}/collector-scripts"
+    owner: "{{ node_exporter_system_user }}"
+    group: "{{ node_exporter_system_group }}"
+    mode: 0755
+
+- name: install external collector scripts
+  when:
+    - node_exporter_external_repository.enabled
+  block:
+    - name: create temporary directory for external collector scripts
+      delegate_to: localhost
+      become: false
+      ansible.builtin.file:
+        state: directory
+        path: "{{ node_exporter_local_tmp_directory }}"
+        mode: 0750
+
+    - name: clone external collector scripts
+      delegate_to: localhost
+      become: false
+      ansible.builtin.git:
+        repo: "{{ node_exporter_external_repository.url }}"
+        version: "{{ node_exporter_external_repository.version | default('main') }}"
+        # update: "{{ node_exporter_external_repository.update | default('true') | bool }}"
+        dest: "{{ node_exporter_local_tmp_directory }}"
+        force: true
+        # depth: 1
+      register: _git_clone
+      when:
+        - node_exporter_external_repository.url is defined
+      notify:
+        - changes git sources
+        - changed message
+      changed_when:
+        - _git_clone.changed
+
+    - name: find files ending with .sh or .py via regex
+      delegate_to: localhost
+      become: false
+      ansible.builtin.find:
+        paths: "{{ node_exporter_local_tmp_directory }}"
+        patterns: "^.*?\\.(?:sh|py)$"
+        use_regex: true
+      register: _found_files
+
+    - name: define list with external collector scripts
+      delegate_to: localhost
+      become: false
+      ansible.builtin.set_fact:
+        node_exporter_ext_collector_scripts: "{{
+            _found_files.files |
+            sort(attribute='path', reverse=True) |
+            map(attribute='path') }}"
+
+    - name: syncronize external collector scripts
+      become: true
+      ansible.posix.synchronize:
+        src: "{{ item }}/"
+        dest: "{{ node_exporter_install_path }}/collector-scripts/"
+        checksum: true
+        # times: false
+        rsync_opts:
+          - --quiet
+          - --include="*.sh"
+          - --include="*.py"
+          - --exclude="*"
+          - --no-perms
+          - --no-owner
+          - --no-group
+      when:
+        - node_exporter_ext_collector_scripts is defined
+        - node_exporter_ext_collector_scripts | count > 0
+      loop: "{{ node_exporter_ext_collector_scripts | bodsch.prometheus.unique_dirs }}"
+      loop_control:
+        label: "{{ item }}"
+
+- name: detect node_exporter collector scripts
+  ansible.builtin.set_fact:
+    node_exporter_int_collector_scripts: "{{ query('bodsch.core.file_glob', '.sh', '.py') }}"
+  vars:
+    search_path:
+      - ".."
+      - "../.."
+
+- name: syncronize internal collector scripts
+  become: true
+  ansible.posix.synchronize:
+    src: "{{ item }}/"
+    dest: "{{ node_exporter_install_path }}/collector-scripts/"
+    checksum: true
+    rsync_opts:
+      - --quiet
+      - --include="*.sh"
+      - --include="*.py"
+      - --exclude="*"
+      - --no-perms
+      - --no-owner
+      - --no-group
+  loop: "{{ node_exporter_int_collector_scripts | bodsch.prometheus.unique_dirs }}"
+  loop_control:
+    label: "{{ item }}"
+
+- name: fix file rights for collector scripts
+  ansible.builtin.file:
+    path: "{{ node_exporter_install_path }}/collector-scripts"
+    owner: "{{ node_exporter_system_user }}"
+    group: "{{ node_exporter_system_group }}"
+    mode: 0755
+    recurse: true
+
+...

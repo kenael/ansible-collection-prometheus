@@ -1,0 +1,12 @@
+---
+
+- name: prepare
+  ansible.builtin.import_tasks: prepare.yml
+
+- name: install
+  ansible.builtin.import_tasks: install.yml
+
+- name: cron jobs
+  ansible.builtin.import_tasks: cronjobs.yml
+
+...

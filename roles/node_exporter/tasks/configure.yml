@@ -8,6 +8,27 @@
     group: "{{ node_exporter_system_group }}"
     mode: 0775
 
+- name: custom directories
+  when:
+    - node_exporter_collectors is defined
+    - node_exporter_collectors.enabled is defined
+    - node_exporter_collectors.enabled
+  block:
+    - name: define custom directories
+      ansible.builtin.set_fact:
+        node_exporter_custom_dirs: "{{ node_exporter_collectors | bodsch.prometheus.node_exporter_custom_dirs('textfile') }}"
+
+    - name: create node_exporter configuration directory
+      ansible.builtin.file:
+        state: directory
+        path: "{{ item }}"
+        owner: root
+        group: "{{ node_exporter_system_group }}"
+        mode: 0775
+      loop: "{{ node_exporter_custom_dirs }}"
+      loop_control:
+        label: "{{ item }}"
+
 - name: create node_exporter configuration
   ansible.builtin.template:
     src: "node_exporter/config.yml.j2"

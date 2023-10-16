@@ -1,0 +1,17 @@
+---
+
+node_exporter_collector_scripts:
+  - name: apt
+    cron:
+      enabled: true
+      minute: "10"
+      hour: "*/1"
+      job: "{{ node_exporter_install_path }}/collector-scripts/apt.sh > {{ node_exporter_textfile_dir }}/apt.prom"
+  - name: required-reboot
+    cron:
+      enabled: false
+      minute: 0
+      hour: "*/1"
+      job: "{{ node_exporter_install_path }}/collector-scripts/required-reboot.sh > {{ node_exporter_textfile_dir }}/required-reboot.prom"
+
+...
