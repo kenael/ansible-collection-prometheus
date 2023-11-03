@@ -51,7 +51,6 @@ jobs:
           - alertmanager
           - am_silence
           - blackbox_exporter
-          - collector_scripts
           - docker_sd
           - json_exporter
           - mongodb_exporter

@@ -1,8 +1,0 @@
-#
-
-solr_core="{{ node_exporter_solr_response.core }}"
-solr_server="{{ node_exporter_solr_response.instance }}"
-
-solr_url="{{ node_exporter_solr_response.url }}/${solr_server}/${solr_core}"
-
-solr_endpoints=( {{ node_exporter_solr_response.endpoints | default([]) | join(' ') }} )
