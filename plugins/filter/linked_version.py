@@ -10,8 +10,7 @@ display = Display()
 
 
 class FilterModule(object):
-    """
-    """
+
     def filters(self):
         return {
             'linked_version': self.linked_version,

@@ -32,12 +32,13 @@ env:
 
 jobs:
   deb:
-    name: "${{ matrix.image }} / ansible: ${{ matrix.ansible-version }} / ${{ matrix.python_version }}"
+    name: "${{ matrix.image }} / ${{ matrix.collection_role }} / ${{ matrix.ansible-version }} / ${{ matrix.python_version }}"
     runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
       matrix:
         image:
+          - archlinux:latest
           - debian:12
         ansible-version:
           - '6.7'
@@ -46,7 +47,22 @@ jobs:
           - "3.11.3"
         scenario:
           - default
-
+        collection_role:
+          - alertmanager
+          - am_silence
+          - blackbox_exporter
+          - collector_scripts
+          - docker_sd
+          - json_exporter
+          - mongodb_exporter
+          - mysql_exporter
+          - nginx_exporter
+          - node_exporter
+          - node_exporter_textfile_collectors
+          - promcheck
+          - prometheus
+          - pushgateway
+          - trickster
     steps:
       - name: check out the codebase.
         uses: actions/checkout@v3
@@ -74,6 +90,7 @@ jobs:
             test \
               -e TOX_ANSIBLE="ansible_${{ matrix.ansible-version }}" \
               -e DISTRIBUTION="${{ matrix.image }}" \
+              -e COLLECTION_ROLE="${{ matrix.collection_role }}" \
               -e COLLECTION_SCENARIO="${{ matrix.scenario }}"
         env:
           PY_COLORS: '1'
