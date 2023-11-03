@@ -1,6 +1,6 @@
 ---
 
-name: mongodb_exporter
+name: exporter: mongodb
 
 on:
   workflow_dispatch:
