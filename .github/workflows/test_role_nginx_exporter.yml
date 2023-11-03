@@ -1,6 +1,6 @@
 ---
 
-name: exporter: nginx
+name: "exporter: nginx"
 
 on:
   workflow_dispatch:

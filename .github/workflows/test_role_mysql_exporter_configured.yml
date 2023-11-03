@@ -1,6 +1,6 @@
 ---
 
-name: exporter: mysql with various configuration
+name: "exporter: mysql with various configuration"
 
 on:
   workflow_run:

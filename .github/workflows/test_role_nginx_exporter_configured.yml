@@ -1,6 +1,6 @@
 ---
 
-name: exporter: nginx with various configuration
+name: "exporter: nginx with various configuration"
 
 on:
   workflow_run:

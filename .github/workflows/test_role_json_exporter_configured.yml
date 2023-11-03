@@ -1,6 +1,6 @@
 ---
 
-name: exporter: json with various configuration
+name: "exporter: json with various configuration"
 
 on:
   workflow_run:

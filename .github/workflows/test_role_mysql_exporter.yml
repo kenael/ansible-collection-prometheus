@@ -1,6 +1,6 @@
 ---
 
-name: exporter: mysql
+name: "exporter: mysql"
 
 on:
   workflow_dispatch:

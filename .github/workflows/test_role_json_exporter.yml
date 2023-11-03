@@ -1,6 +1,6 @@
 ---
 
-name: exporter: json
+name: "exporter: json"
 
 on:
   workflow_dispatch:

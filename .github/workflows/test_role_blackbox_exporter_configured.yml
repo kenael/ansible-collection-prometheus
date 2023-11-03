@@ -1,6 +1,6 @@
 ---
 
-name: exporter: blackbox with various configuration
+name: "exporter: blackbox with various configuration"
 
 on:
   workflow_run:

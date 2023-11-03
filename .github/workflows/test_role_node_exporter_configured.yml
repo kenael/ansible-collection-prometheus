@@ -1,6 +1,6 @@
 ---
 
-name: exporter: node with various configuration
+name: "exporter: node with various configuration"
 
 on:
   workflow_run:

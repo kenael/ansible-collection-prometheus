@@ -1,6 +1,6 @@
 ---
 
-name: exporter: blackbox
+name: "exporter: blackbox"
 
 on:
   workflow_dispatch:

@@ -1,6 +1,6 @@
 ---
 
-name: exporter: node with collector scripts
+name: "exporter: node with collector scripts"
 
 on:
   workflow_dispatch:
