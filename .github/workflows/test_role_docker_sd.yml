@@ -107,7 +107,7 @@ matrix.python_version }}"
       fail-fast: false
       matrix:
         image:
-          - debian:11
+          - debian:12
         ansible-version:
           - '6.7'
         python_version:

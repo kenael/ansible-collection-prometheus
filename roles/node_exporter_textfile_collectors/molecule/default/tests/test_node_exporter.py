@@ -107,29 +107,57 @@ def local_facts(host):
     return host.ansible("setup").get("ansible_facts").get("ansible_local").get("node_exporter")
 
 
-def test_files(host, get_vars):
+@pytest.mark.parametrize("dirs", [
+    "/etc/node_exporter",
+])
+def test_directories(host, dirs):
+    d = host.file(dirs)
+    assert d.is_directory
+
+@pytest.mark.parametrize("files", [
+    "/usr/bin/node_exporter",
+])
+def test_files(host, files):
     """
     """
-    distribution = host.system_info.distribution
-    release = host.system_info.release
+    d = host.file(files)
+    assert d.is_file
 
-    print(f"distribution: {distribution}")
-    print(f"release     : {release}")
 
-    version = local_facts(host).get("version")
+def test_user(host, get_vars):
+    """
+    """
+    user = get_vars.get("node_exporter_system_user", "node_exp")
+    group = get_vars.get("node_exporter_system_group", "node_exp")
 
-    install_dir = get_vars.get("node_exporter_install_path")
+    assert host.group(group).exists
+    assert host.user(user).exists
+    assert group in host.user(user).groups
+    assert host.user(user).home == "/nonexistent"
 
-    if 'latest' in install_dir:
-        install_dir = install_dir.replace('latest', version)
 
-    files = []
-    files.append("/usr/bin/node_exporter")
+def test_service(host, get_vars):
+    service = host.service("node_exporter")
+    assert service.is_enabled
+    assert service.is_running
 
-    if install_dir:
-        files.append(f"{install_dir}/collector-scripts/apt.sh")
-        files.append(f"{install_dir}/collector-scripts/required-reboot.sh")
 
-    for _file in files:
-        f = host.file(_file)
-        assert f.is_file
+def test_open_port(host, get_vars):
+    for i in host.socket.get_listening_sockets():
+        print(i)
+
+    node_exporter_service = get_vars.get("node_exporter_service", {})
+
+    print(node_exporter_service)
+
+    if isinstance(node_exporter_service, dict):
+        node_exporter__web = node_exporter_service.get("web", {})
+        listen_address = node_exporter__web.get("listen_address")
+
+    if not listen_address:
+        listen_address = "0.0.0.0:9100"
+
+    print(listen_address)
+
+    service = host.socket(f"tcp://{listen_address}")
+    assert service.is_listening
