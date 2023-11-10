@@ -11,6 +11,12 @@ node_exporter_collectors:
     - filesystem:
         mount-points-exclude: "^/(sys|proc|dev)($|/)"
         fs-types-exclude: "^(sys|proc|auto)fs$"
+    - systemd
+    - processes
+    - cpu
+    - xfs
+    - meminfo
+    - netstat
   disabled:
     - systemd
     - zfs

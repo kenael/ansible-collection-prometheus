@@ -25,8 +25,10 @@ class FilterModule(object):
         directories = []
         _enabled = data.get("enabled", None)
 
+        display.v(f"_enabled: {_enabled}")
+
         if isinstance(_enabled, list) and _enabled:
-            directories = [v.get("directory") for e in _enabled for k, v in e.items() if k == custom_directory and v.get("directory", None) ]
+            directories = [v.get("directory") for e in _enabled if type(e).__name__ == "dict" for k, v in e.items() if k == custom_directory and v.get("directory", None) ]
 
         return directories
 
