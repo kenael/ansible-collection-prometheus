@@ -62,6 +62,7 @@ jobs:
           - prometheus
           - pushgateway
           - trickster
+          - redis_exporter
     steps:
       - name: check out the codebase.
         uses: actions/checkout@v3

@@ -12,6 +12,4 @@ redis_exporter_direct_download: false
 
 redis_exporter_service: {}
 
-redis_exporter_config: []
-
 ...
