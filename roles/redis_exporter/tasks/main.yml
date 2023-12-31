@@ -1,0 +1,36 @@
+---
+
+- name: prepare
+  ansible.builtin.import_tasks: prepare.yml
+  tags:
+    - redis_exporter_install
+    - redis_exporter_configure
+    - redis_exporter_run
+
+- name: download archive
+  ansible.builtin.import_tasks: download.yml
+  tags:
+    - redis_exporter_install
+
+- name: external installation
+  ansible.builtin.import_tasks: external_installation.yml
+  tags:
+    - redis_exporter_install
+
+- name: install
+  ansible.builtin.import_tasks: install.yml
+  tags:
+    - redis_exporter_install
+
+# - name: configure
+#   ansible.builtin.import_tasks: configure.yml
+#   tags:
+#     - redis_exporter_configure
+
+- name: service
+  ansible.builtin.import_tasks: service.yml
+  tags:
+    - redis_exporter_run
+    - redis_exporter_configure
+
+...

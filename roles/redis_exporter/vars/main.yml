@@ -1,0 +1,84 @@
+---
+
+redis_exporter_main_version: "{{ redis_exporter_version[0:3] }}"
+
+redis_exporter_install_path: /usr/local/opt/redis_exporter/{{ redis_exporter_version }}
+
+redis_exporter_delegate_to: localhost
+
+redis_exporter_local_tmp_directory: "{{
+  lookup('env', 'CUSTOM_LOCAL_TMP_DIRECTORY') |
+  default(lookup('env', 'HOME') ~ '/.cache/ansible/redis_exporter', true) }}/{{ redis_exporter_version }}"
+
+redis_exporter_requirements:
+  - iproute2
+
+redis_exporter_defaults_config: []
+
+redis_exporter_defaults_service:
+  redis:
+    address: ""                                                   # Address of the Redis instance to scrape (default "redis://localhost:6379")
+    password: ""                                                  # Password of the Redis instance to scrape
+    password_file: ""                                             # Password file of the Redis instance to scrape
+    user: ""                                                      # User name to use for authentication (Redis ACL for Redis 6.0 and newer)
+    only_metrics: ""                                              #
+  check:
+    key_groups: []                                                # Comma separated list of lua regex for grouping keys
+    keys: []                                                      # Comma separated list of key-patterns to export value and length/size, searched for with SCAN
+    keys_batch_size: ""                                           # Approximate number of keys to process in each execution, larger value speeds up scanning.
+                                                                  # WARNING: Still Redis is a single-threaded app, huge COUNT can affect production environment. (default 1000)
+    single_keys: []                                               # Comma separated list of single keys to export value and length/size
+    single_streams: []                                            # Comma separated list of single streams to export info about streams, groups and consumers
+    streams: []                                                   # Comma separated list of stream-patterns to export info about streams, groups and consumers, searched for with SCAN
+  config_command: ""                                              #
+  connection_timeout: ""                                          #
+  count_keys: []                                                  #
+  debug: ""                                                       #
+  disable_exporting_key_values: ""                                #
+  export_client_list: ""                                          # Whether to scrape Client List specific metrics
+  export_client_port: ""                                          # Whether to include the client's port when exporting the client list. Warning: including the port increases the number of metrics generated and will make your Prometheus server take up more memory
+  include_config_metrics: ""                                      # Whether to include all config settings as metrics
+  include_system_metrics: ""                                      # Whether to include system metrics like e.g. redis_total_system_memory_bytes
+  is_cluster: ""                                                  # Whether this is a redis cluster (Enable this if you need to fetch key level data on a Redis Cluster).
+  is_tile38: ""                                                   # Whether to scrape Tile38 specific metrics
+  max_distinct_key_groups: ""                                     # The maximum number of distinct key groups with the most memory utilization to present as distinct metrics per database, the leftover key groups will be aggregated in the 'overflow' bucket (default 100)
+  namespace: ""                                                   # Namespace for metrics (default "redis")
+  ping_on_connect: ""                                             # Whether to ping the redis instance after connecting
+  redact_config_metrics: ""                                       # Whether to redact config settings that include potentially sensitive information like passwords (default true)
+  script: []                                                      # Comma separated list of path(s) to Redis Lua script(s) for gathering extra metrics
+  set_client_name: ""                                             # [true | false]
+  tls:                                                            #
+    skip_tls_verification: ""                                     # Whether to to skip TLS verification
+    ca_cert_file: ""                                              # Name of the CA certificate file (including full path) if the server requires TLS client authentication
+    client:
+      cert_file: ""                                               # Name of the client certificate file (including full path) if the server requires TLS client authentication
+      key_file: ""                                                # Name of the client key file (including full path) if the server requires TLS client authentication
+    server:
+      ca_cert_file: ""                                            # Name of the CA certificate file (including full path) if the web interface and telemetry should require TLS client authentication
+      cert_file: ""                                               # Name of the server certificate file (including full path) if the web interface and telemetry should use TLS
+      key_file: ""                                                # Name of the server key file (including full path) if the web interface and telemetry should use TLS
+      min_version: ""                                             # Minimum TLS version that is acceptable by the web interface and telemetry when using TLS (default "TLS1.2")
+  log:
+    level: info                                                   # NOT USED (but why!?)
+    format: ""                                                    #
+  web:                                                            #
+    listen_address: "127.0.0.1:9121"                              #
+    telemetry_path: "/metrics"                                    #
+
+redis_exporter_defaults_directory: /etc/default
+
+redis_exporter_defaults_release:
+  # https://github.com/oliver006/redis_exporter/releases/download/v1.56.0/redis_exporter-v1.56.0.linux-amd64.tar.gz
+  download_url: https://github.com/oliver006/redis_exporter/releases
+  file: redis_exporter-v{{ redis_exporter_version }}.{{ ansible_system | lower }}-{{ system_architecture }}.tar.gz
+  binary: redis_exporter
+
+go_arch_map:
+  i386: '386'
+  x86_64: 'amd64'
+
+system_architecture: "{{ go_arch_map[ansible_architecture] | default(ansible_architecture) }}"
+
+systemd_lib_directory: /lib/systemd/system
+
+...

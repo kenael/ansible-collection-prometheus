@@ -1,0 +1,6 @@
+---
+
+redis_exporter_requirements:
+  - iproute
+
+...
