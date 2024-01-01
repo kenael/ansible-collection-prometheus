@@ -1,5 +1,7 @@
 ---
 
+ssl_exporter_default_module: https_timeout
+
 ssl_exporter_modules:
 
   https:
@@ -22,6 +24,7 @@ ssl_exporter_modules:
       proxy_url: "socks5://localhost:8123"
 
   https_timeout:
+    description: simple HTTPs check with 3s timeout
     prober: https
     timeout: 3s
 

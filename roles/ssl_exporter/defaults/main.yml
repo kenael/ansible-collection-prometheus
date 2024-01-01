@@ -15,6 +15,6 @@ ssl_exporter_release: {}
 
 ssl_exporter_modules: {}
 
-ssl_exporter_default_module: "https"
+ssl_exporter_default_module: ""
 
 ...
