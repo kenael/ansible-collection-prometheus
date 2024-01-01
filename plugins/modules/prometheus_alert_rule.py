@@ -47,10 +47,10 @@ class PrometheusAlertRule(object):
             self.annotations['title'] = self.is_base64(annotations_title)
 
         if annotations_description and len(annotations_description) != 0:
-            self.annotations['description'] = self.is_base64(annotations_description)  # base64.standard_b64decode(annotations_description).decode('utf-8')
+            self.annotations['description'] = self.is_base64(annotations_description)
 
         if annotations_summary and len(annotations_summary) != 0:
-            self.annotations['summary'] = self.is_base64(annotations_summary)  # base64.standard_b64decode(annotations_summary).decode('utf-8')
+            self.annotations['summary'] = self.is_base64(annotations_summary)
 
     def run(self):
         """

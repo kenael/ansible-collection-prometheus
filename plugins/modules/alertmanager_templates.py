@@ -43,7 +43,11 @@ class AlertmanagerTemplates():
             failed=False,
         )
 
-        exists_template_files = [f for f in os.listdir(self.templates_directory) if os.path.isfile(os.path.join(self.templates_directory, f)) and f.endswith(".tmpl")]
+        exists_template_files = [
+            f
+            for f in os.listdir(self.templates_directory)
+            if os.path.isfile(os.path.join(self.templates_directory, f)) and f.endswith(".tmpl")
+        ]
 
         _exists = set(self.templates)
 

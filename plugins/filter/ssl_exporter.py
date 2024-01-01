@@ -19,4 +19,4 @@ class FilterModule(object):
     def ssl_exporter_modules(self, data, valid_probers):
         """
         """
-        return [k for k,v in data.items() if v.get('prober') in valid_probers]
+        return [k for k, v in data.items() if v.get('prober') in valid_probers]
