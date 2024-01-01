@@ -13,8 +13,11 @@ ssl_exporter_service: {}
 
 ssl_exporter_release: {}
 
-ssl_exporter_modules: {}
+ssl_exporter_modules:
+  https:
+    description: simple HTTPs check
+    prober: https
 
-ssl_exporter_default_module: ""
+ssl_exporter_default_module: "https"
 
 ...
