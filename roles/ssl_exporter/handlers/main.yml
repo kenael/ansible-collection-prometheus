@@ -1,0 +1,31 @@
+---
+
+- name: daemon-reload
+  ansible.builtin.systemd:
+    daemon_reload: true
+    force: true
+  notify: restart ssl_exporter
+  when:
+    - ansible_service_mgr == 'systemd'
+
+- name: validate config  # noqa no-handler
+  become: true
+  ansible.builtin.command: |
+    /bin/true
+  register: _validate
+  changed_when: _validate.rc != 0
+  failed_when: _validate.rc != 0
+
+- name: restart ssl exporter
+  become: true
+  ansible.builtin.service:
+    name: ssl_exporter
+    state: restarted
+
+- name: reload ssl exporter
+  become: true
+  ansible.builtin.service:
+    name: ssl_exporter
+    state: reloaded
+
+...

@@ -19,6 +19,8 @@ Documentation for the collection.
 | [bodsch.prometheus.prometheus](./roles/prometheus/README.md)               |       |       |
 | [bodsch.prometheus.pushgateway](./roles/pushgateway/README.md)             |       |       |
 | [bodsch.prometheus.trickster](./roles/trickster/README.md)                 |       |       |
+| [bodsch.prometheus.redis_exporter](./roles/redis_exporter/README.md)       |       |       |
+| [bodsch.prometheus.ssl_exporter](./roles/ssl_exporter/README.md)           |       |       |
 
 ## Modules
 

@@ -1,0 +1,30 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
+---
+# {{ ansible_managed }}
+{% if ssl_exporter_default_module is defined and
+      ssl_exporter_default_module | string | length > 0 %}
+default_module: {{ ssl_exporter_default_module }}
+{% endif %}
+modules:
+  {% if ssl_exporter_modules is defined and
+        ssl_exporter_modules | count > 0 %}
+    {#
+      - https
+      - tcp
+      - file
+      - kubernetes
+      - kubeconfig
+    #}
+    {% for key, values in ssl_exporter_modules.items() %}
+      {% set _prober = values.get("prober", None) %}
+      {% set _description = values.get("description", "") %}
+      {% if _prober in ["https", "tcp", "file", "kubernetes", "kubeconfig"] %}
+        {% if values.get("description", "") | string | length > 0 %}
+  # {{ values.get("description") }}
+          {% set _ = values.pop("description") %}
+        {% endif %}
+  {{ key }}:
+    {{ values | to_nice_yaml(indent=2, width=1337, sort_keys=False) | indent(4, False) }}
+      {% endif %}
+    {% endfor %}
+  {% endif %}

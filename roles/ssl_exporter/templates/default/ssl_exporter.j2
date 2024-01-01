@@ -1,0 +1,49 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
+# {{ ansible_managed }}
+
+OPTIONS=" \
+{% if ssl_exporter_service is defined %}
+  {# log configuration #}
+  {% if ssl_exporter_service.log.level in ["debug", "info", "warn", "error"] %}
+    {% set _loglevel = ssl_exporter_service.log.level %}
+  {% endif %}
+  --log.level {{ _loglevel }} \
+  {% if ssl_exporter_service.log.format is defined and
+        ssl_exporter_service.log.format in ["logfmt", "json"] %}
+  --log.format {{ ssl_exporter_service.log.format }} \
+  {% endif %}
+  {# web configuration #}
+  {% if ssl_exporter_service.web.listen_address is defined and
+        ssl_exporter_service.web.listen_address | string | length > 0 %}
+  --web.listen-address {{ ssl_exporter_service.web.listen_address }} \
+  {% endif %}
+  {% if ssl_exporter_service.web.metrics_path is defined and
+        ssl_exporter_service.web.metrics_path | string | length > 0 %}
+  --web.metrics-path {{ ssl_exporter_service.web.metrics_path }} \
+  {% endif %}
+  {% if ssl_exporter_service.web.probe_path is defined and
+        ssl_exporter_service.web.probe_path | string | length > 0 %}
+  --web.probe-path {{ ssl_exporter_service.web.probe_path }} \
+  {% endif %}
+  {% if ssl_exporter_service.config.file is defined and
+        ssl_exporter_service.config.file | string | length > 0 %}
+  --config.file {{ ssl_exporter_service.config.file }} \
+  {% endif %}
+{% endif %}
+"
+{#
+ssl_exporter --help
+usage: ssl_exporter [<flags>]
+
+Flags:
+  -h, --help                     Show context-sensitive help (also try --help-long and --help-man).
+      --web.listen-address=":9219"
+                                 Address to listen on for web interface and telemetry.
+      --web.metrics-path="/metrics"
+                                 Path under which to expose metrics
+      --web.probe-path="/probe"  Path under which to expose the probe endpoint
+      --config.file=""           SSL exporter configuration file
+      --log.level=info           Only log messages with the given severity or above. One of: [debug, info, warn, error]
+      --log.format=logfmt        Output format of log messages. One of: [logfmt, json]
+      --version                  Show application version.
+#}

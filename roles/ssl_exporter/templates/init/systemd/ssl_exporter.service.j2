@@ -1,0 +1,39 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
+{{ ansible_managed | comment }}
+
+[Unit]
+Description             = Prometheus SSL Exporter
+After                   = network-online.target
+StartLimitInterval      = 0
+StartLimitIntervalSec   = 0
+
+[Service]
+Type                    = simple
+EnvironmentFile         = {{ ssl_exporter_defaults_directory }}/ssl_exporter
+
+User                    = {{ ssl_exporter_system_user }}
+Group                   = {{ ssl_exporter_system_group }}
+
+ExecReload              = /bin/kill -HUP $MAINPID
+ExecStart               = /usr/bin/{{ ssl_exporter_release.binary }} $OPTIONS
+
+SyslogIdentifier        = ssl_exporter
+Restart                 = always
+RestartSec              = 15
+
+LockPersonality         = true
+NoNewPrivileges         = true
+MemoryDenyWriteExecute  = true
+PrivateTmp              = true
+ProtectHome             = true
+RemoveIPC               = true
+RestrictSUIDSGID        = true
+
+AmbientCapabilities     = CAP_NET_RAW
+ProtectControlGroups    = true
+ProtectKernelModules    = true
+ProtectKernelTunables   = yes
+ProtectSystem           = strict
+
+[Install]
+WantedBy                = multi-user.target
