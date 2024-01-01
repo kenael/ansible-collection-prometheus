@@ -1,0 +1,36 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
+---
+# {{ ansible_managed }}
+{% set _valid_probers = ["https", "tcp", "file", "kubernetes", "kubeconfig"] %}
+{% set _defined_modules = ssl_exporter_modules | bodsch.prometheus.ssl_exporter_modules(valid_probers=_valid_probers) %}
+{% if ssl_exporter_default_module is defined and
+      ssl_exporter_default_module | string | length > 0 %}
+  {% if ssl_exporter_default_module in _defined_modules %}
+
+default_module: {{ ssl_exporter_default_module }}
+  {% endif %}
+
+{% endif %}
+{% if ssl_exporter_modules is defined and
+      ssl_exporter_modules | count > 0 %}
+modules:
+    {#
+      - https
+      - tcp
+      - file
+      - kubernetes
+      - kubeconfig
+    #}
+    {% for key, values in ssl_exporter_modules.items() %}
+      {% set _prober = values.get("prober", None) %}
+      {% set _description = values.get("description", None) %}
+      {% if _prober in _valid_probers %}
+        {% if _description %}
+  # {{ _description }}
+          {% set _ = values.pop("description") %}
+        {% endif %}
+  {{ key }}:
+    {{ values | to_nice_yaml(indent=2, width=1337, sort_keys=False) | indent(4, False) }}
+      {% endif %}
+    {% endfor %}
+{% endif %}

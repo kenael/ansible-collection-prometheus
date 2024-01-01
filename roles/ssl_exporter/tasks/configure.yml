@@ -1,0 +1,20 @@
+---
+
+- name: create ssl exporter configuration directory
+  ansible.builtin.file:
+    state: directory
+    path: "{{ ssl_exporter_service.config.file | dirname }}"
+    group: "{{ ssl_exporter_system_group }}"
+    mode: 0750
+
+- name: configure ssl exporter
+  ansible.builtin.template:
+    src: ssl_exporter/ssl_exporter.yml.j2
+    dest: "{{ ssl_exporter_service.config.file }}"
+    group: "{{ ssl_exporter_system_group }}"
+    mode: 0644
+  notify:
+    - validate config
+    - restart ssl exporter
+
+...

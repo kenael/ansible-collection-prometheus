@@ -1,0 +1,43 @@
+---
+
+ssl_exporter_main_version: "{{ ssl_exporter_version[0:3] }}"
+
+ssl_exporter_install_path: /usr/local/opt/ssl_exporter/{{ ssl_exporter_version }}
+
+ssl_exporter_delegate_to: localhost
+
+ssl_exporter_local_tmp_directory: "{{
+  lookup('env', 'CUSTOM_LOCAL_TMP_DIRECTORY') |
+  default(lookup('env', 'HOME') ~ '/.cache/ansible/ssl_exporter', true) }}/{{ ssl_exporter_version }}"
+
+ssl_exporter_requirements:
+  - iproute2
+
+ssl_exporter_defaults_service:
+  log:                                                  #
+    level: info                                         # Only log messages with the given severity or above. One of: [debug, info, warn, error]
+    format: logfmt                                      # Output format of log messages. One of: [logfmt, json]
+  web:                                                  #
+    listen_address: "127.0.0.1:9219"                    # Address to listen on for web interface and telemetry.
+    metrics_path: ""                                    # Path under which to expose metrics
+    probe_path: ""                                      # Path under which to expose the probe endpoint
+  config:                                               #
+    file: "/etc/ssl_exporter/ssl_exporter.yml"          # SSL exporter configuration file
+
+ssl_exporter_defaults_directory: /etc/default
+
+ssl_exporter_defaults_release:
+  download_url: https://github.com/ribbybibby/ssl_exporter/releases
+  file: ssl_exporter_{{ ssl_exporter_version }}_{{ ansible_system | lower }}_{{ system_architecture }}.tar.gz
+  binary: ssl_exporter
+
+go_arch_map:
+  i386: '386'
+  x86_64: 'amd64'
+
+system_architecture: "{{ go_arch_map[ansible_architecture] | default(ansible_architecture) }}"
+
+systemd_lib_directory: /lib/systemd/system
+
+
+...

@@ -1,0 +1,13 @@
+---
+
+- name: flush handlers
+  ansible.builtin.meta: flush_handlers
+
+- name: ensure ssl_exporter is enabled on boot
+  become: true
+  ansible.builtin.service:
+    name: ssl_exporter
+    enabled: true
+    state: started
+
+...

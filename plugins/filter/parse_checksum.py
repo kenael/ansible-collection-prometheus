@@ -36,7 +36,10 @@ class FilterModule(object):
             # 206cf787c01921574ca171220bb9b48b043c3ad6e744017030fed586eb48e04b  alertmanager-0.25.0.linux-amd64.tar.gz
             # 2b8b693ce006406db200c7bd9987453b7055e4e98511fd7b36d492fc68bfc0f4  nginx-prometheus-exporter_0.11.0_linux_amd64.tar.gz
             # (?P<checksum>[a-zA-Z0-9]+).*alertmanager[-_].*linux-amd64\.tar\.gz$
-            checksum = [x for x in data if re.search(fr"(?P<checksum>[a-zA-Z0-9]+).*{application}[-_].*{os}[-_]{arch}\.{file_extension}", x)][0]
+            checksum = [
+                x for x in data
+                if re.search(fr"(?P<checksum>[a-zA-Z0-9]+).*{application}[-_].*{os}[-_]{arch}\.{file_extension}", x)
+            ][0]
 
             display.v(f"  found checksum: {checksum}")
 
