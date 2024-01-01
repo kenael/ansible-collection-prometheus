@@ -1,0 +1,312 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
+# {{ ansible_managed }}
+
+# GOMAXPROCS={{ ansible_processor_vcpus | default(ansible_processor_count) }}
+
+OPTIONS=" \
+{% if redis_exporter_service is defined %}
+  {# client name #}
+  {% if redis_exporter_service.set_client_name is defined and
+        redis_exporter_service.set_client_name | string | length > 0 and
+        redis_exporter_service.set_client_name %}
+  --set-client-name \
+  {% endif %}
+  {% if redis_exporter_service.debug is defined and
+        redis_exporter_service.debug | string | length > 0 and
+        redis_exporter_service.debug %}
+  --debug \
+  {% endif %}
+  {# log #}
+  {% if redis_exporter_service.log.format is defined and
+        redis_exporter_service.log.format in ["txt", "json"] %}
+  --log.format={{redis_exporter_service.log.format }} \
+  {% endif %}
+  {# web #}
+  {% if redis_exporter_service.web.listen_address is defined and
+        redis_exporter_service.web.listen_address | string | length > 0 %}
+  --web.listen-address={{ redis_exporter_service.web.listen_address }} \
+  {% endif %}
+  {% if redis_exporter_service.web.telemetry_path is defined and
+        redis_exporter_service.web.telemetry_path | string | length > 0 %}
+  --web.telemetry-path={{ redis_exporter_service.web.telemetry_path }} \
+  {% endif %}
+  {# redis #}
+  {% if redis_exporter_service.redis.address is defined and
+        redis_exporter_service.redis.address | string | length > 0 %}
+  --redis.addr={{ redis_exporter_service.redis.address }} \
+  {% endif %}
+  {% if redis_exporter_service.redis.password is defined and
+        redis_exporter_service.redis.password | string | length > 0 %}
+  --redis.password={{ redis_exporter_service.redis.password }} \
+  {% endif %}
+  {% if redis_exporter_service.redis.password_file is defined and
+        redis_exporter_service.redis.password_file | string | length > 0 %}
+  --redis.password-file={{ redis_exporter_service.redis.password_file }} \
+  {% endif %}
+  {% if redis_exporter_service.redis.user is defined and
+        redis_exporter_service.redis.user | string | length > 0 %}
+  --redis.user={{ redis_exporter_service.redis.user }} \
+  {% endif %}
+  {% if redis_exporter_service.redis.user is defined and
+        redis_exporter_service.redis.user | string | length > 0 %}
+  --redis.user={{ redis_exporter_service.redis.user }} \
+  {% endif %}
+  {% if redis_exporter_service.redis.only_metrics is defined and
+        redis_exporter_service.redis.only_metrics | string | length > 0 and
+        redis_exporter_service.redis.only_metrics %}
+  --redis-only-metrics \
+  {% endif %}
+  {# tls #}
+  {% if redis_exporter_service.tls.skip_tls_verification is defined and
+        redis_exporter_service.tls.skip_tls_verification | string | length > 0 and
+        redis_exporter_service.tls.skip_tls_verification %}
+  --skip-tls-verification \
+  {% endif %}
+  {% if redis_exporter_service.tls.ca_cert_file is defined and
+        redis_exporter_service.tls.ca_cert_file | string | length > 0 %}
+  --tls-ca-cert-file={{ redis_exporter_service.tls.ca_cert_file }} \
+  {% endif %}
+  {# tls client #}
+  {% if redis_exporter_service.tls.client.cert_file is defined and
+        redis_exporter_service.tls.client.cert_file | string | length > 0 %}
+  -tls-client-cert-file={{ redis_exporter_service.tls.client.cert_file }} \
+  {% endif %}
+  {% if redis_exporter_service.tls.client.key_file is defined and
+        redis_exporter_service.tls.client.key_file | string | length > 0 %}
+  --tls-client-key-file={{ redis_exporter_service.tls.client.key_file }} \
+  {% endif %}
+  {# tls server #}
+  {% if redis_exporter_service.tls.server.ca_cert_file is defined and
+        redis_exporter_service.tls.server.ca_cert_file | string | length > 0 %}
+  --tls-server-ca-cert-file={{ redis_exporter_service.tls.server.ca_cert_file }} \
+  {% endif %}
+  {% if redis_exporter_service.tls.server.cert_file is defined and
+        redis_exporter_service.tls.server.cert_file | string | length > 0 %}
+  --tls-server-cert-file={{ redis_exporter_service.tls.server.cert_file }} \
+  {% endif %}
+  {% if redis_exporter_service.tls.server.key_file is defined and
+        redis_exporter_service.tls.server.key_file | string | length > 0 %}
+  --tls-server-key-file={{ redis_exporter_service.tls.server.key_file }} \
+  {% endif %}
+  {% if redis_exporter_service.tls.server.min_version is defined and
+        redis_exporter_service.tls.server.min_version | string | length > 0 %}
+  --tls-server-min-version={{ redis_exporter_service.tls.server.min_version }} \
+  {% endif %}
+  {# config #}
+  {% if redis_exporter_service.config_command is defined and
+        redis_exporter_service.config_command | string | length > 0 %}
+  --config-command={{ redis_exporter_service.config_command }} \
+  {% endif %}
+  {# check #}
+  {% if redis_exporter_service.check.key_groups is defined %}
+    {% if redis_exporter_service.check.key_groups | bodsch.core.type == "string" and
+          redis_exporter_service.check.key_groups | string | length > 0 %}
+  --check-key-groups={{ redis_exporter_service.check.key_groups }} \
+    {% elif redis_exporter_service.check.key_groups | bodsch.core.type == "list" and
+            redis_exporter_service.check.key_groups | count > 0 %}
+  --check-key-groups={{ redis_exporter_service.check.key_groups | join(',') }} \
+    {% endif %}
+  {% endif %}
+  {% if redis_exporter_service.check.keys is defined %}
+    {% if redis_exporter_service.check.keys | bodsch.core.type == "string" and
+          redis_exporter_service.check.keys | string | length > 0 %}
+  --check-keys={{ redis_exporter_service.check.keys }} \
+    {% elif redis_exporter_service.check.keys | bodsch.core.type == "list" and
+            redis_exporter_service.check.keys | count > 0 %}
+  --check-keys={{ redis_exporter_service.check.keys | join(',') }} \
+    {% endif %}
+  {% endif %}
+  {% if redis_exporter_service.check.keys_batch_size is defined and
+        redis_exporter_service.check.keys_batch_size | string | length > 0 %}
+  --check-keys-batch-size={{ redis_exporter_service.check.keys_batch_size | int }} \
+  {% endif %}
+  {% if redis_exporter_service.check.single_keys is defined %}
+    {% if redis_exporter_service.check.single_keys | bodsch.core.type == "string" and
+          redis_exporter_service.check.single_keys | string | length > 0 %}
+  --check-single-keys={{ redis_exporter_service.check.single_keys }} \
+    {% elif redis_exporter_service.check.single_keys | bodsch.core.type == "list" and
+            redis_exporter_service.check.single_keys | count > 0 %}
+  --check-single-keys={{ redis_exporter_service.check.single_keys | join(',') }} \
+    {% endif %}
+  {% endif %}
+  {% if redis_exporter_service.check.single_streams is defined %}
+    {% if redis_exporter_service.check.single_streams | bodsch.core.type == "string" and
+          redis_exporter_service.check.single_streams | string | length > 0 %}
+  --check-single-keys={{ redis_exporter_service.check.single_streams }} \
+    {% elif redis_exporter_service.check.single_streams | bodsch.core.type == "list" and
+            redis_exporter_service.check.single_streams | count > 0 %}
+  --check-single-keys={{ redis_exporter_service.check.single_streams | join(',') }} \
+    {% endif %}
+  {% endif %}
+  {% if redis_exporter_service.check.streams is defined %}
+    {% if redis_exporter_service.check.streams | bodsch.core.type == "string" and
+          redis_exporter_service.check.streams | string | length > 0 %}
+  --check-streams={{ redis_exporter_service.check.streams }} \
+    {% elif redis_exporter_service.check.streams | bodsch.core.type == "list" and
+            redis_exporter_service.check.streams | count > 0 %}
+  --check-streams={{ redis_exporter_service.check.streams | join(',') }} \
+    {% endif %}
+  {% endif %}
+  {% if redis_exporter_service.connection_timeout is defined and
+        redis_exporter_service.connection_timeout | string | length > 0 %}
+  --connection-timeout={{ redis_exporter_service.connection_timeout }} \
+  {% endif %}
+  {% if redis_exporter_service.count_keys is defined %}
+    {% if redis_exporter_service.count_keys | bodsch.core.type == "string" and
+          redis_exporter_service.count_keys | string | length > 0 %}
+  --count-keys={{ redis_exporter_service.count_keys }} \
+    {% elif redis_exporter_service.count_keys | bodsch.core.type == "list" and
+            redis_exporter_service.count_keys | count > 0 %}
+  --count-keys={{ redis_exporter_service.count_keys | join(',') }} \
+    {% endif %}
+  {% endif %}
+  {% if redis_exporter_service.disable_exporting_key_values is defined and
+        redis_exporter_service.disable_exporting_key_values | string | length > 0 and
+        redis_exporter_service.disable_exporting_key_values %}
+  --disable-exporting-key-values \
+  {% endif %}
+  {% if redis_exporter_service.export_client_list is defined and
+        redis_exporter_service.export_client_list | string | length > 0 and
+        redis_exporter_service.export_client_list %}
+  --export-client-list \
+  {% endif %}
+  {% if redis_exporter_service.export_client_port is defined and
+        redis_exporter_service.export_client_port | string | length > 0 and
+        redis_exporter_service.export_client_port %}
+  --export-client-port \
+  {% endif %}
+  {% if redis_exporter_service.include_config_metrics is defined and
+        redis_exporter_service.include_config_metrics | string | length > 0 and
+        redis_exporter_service.include_config_metrics %}
+  --include-system-metrics \
+  {% endif %}
+  {% if redis_exporter_service.include_system_metrics is defined and
+        redis_exporter_service.include_system_metrics | string | length > 0 and
+        redis_exporter_service.include_system_metrics %}
+  --include-config-metrics \
+  {% endif %}
+  {% if redis_exporter_service.is_cluster is defined and
+        redis_exporter_service.is_cluster | string | length > 0 and
+        redis_exporter_service.is_cluster %}
+  --is-cluster \
+  {% endif %}
+  {% if redis_exporter_service.is_tile38 is defined and
+        redis_exporter_service.is_tile38 | string | length > 0 and
+        redis_exporter_service.is_tile38 %}
+  --is-tile38 \
+  {% endif %}
+  {% if redis_exporter_service.max_distinct_key_groups is defined and
+        redis_exporter_service.max_distinct_key_groups | string | length > 0 %}
+  --max-distinct-key-groups={{ redis_exporter_service.max_distinct_key_groups | int }} \
+  {% endif %}
+  {% if redis_exporter_service.namespace is defined and
+        redis_exporter_service.namespace | string | length > 0 %}
+  --namespace={{ redis_exporter_service.namespace }} \
+  {% endif %}
+  {% if redis_exporter_service.ping_on_connect is defined and
+        redis_exporter_service.ping_on_connect | string | length > 0 and
+        redis_exporter_service.ping_on_connect %}
+  --ping-on-connect \
+  {% endif %}
+  {% if redis_exporter_service.redact_config_metrics is defined and
+        redis_exporter_service.redact_config_metrics | string | length > 0 and
+        redis_exporter_service.redact_config_metrics %}
+  --redact-config-metrics \
+  {% endif %}
+  {% if redis_exporter_service.script is defined %}
+    {% if redis_exporter_service.script | bodsch.core.type == "string" and
+          redis_exporter_service.script | string | length > 0 %}
+  --script={{ redis_exporter_service.script }} \
+    {% elif redis_exporter_service.script | bodsch.core.type == "list" and
+            redis_exporter_service.script | count > 0 %}
+  --script={{ redis_exporter_service.script | join(',') }} \
+    {% endif %}
+  {% endif %}
+{% endif %}
+"
+{#
+redis_exporter --help
+
+Usage of redis_exporter:
+  -check-key-groups string
+        Comma separated list of lua regex for grouping keys
+  -check-keys string
+        Comma separated list of key-patterns to export value and length/size, searched for with SCAN
+  -check-keys-batch-size int
+        Approximate number of keys to process in each execution, larger value speeds up scanning.
+        WARNING: Still Redis is a single-threaded app, huge COUNT can affect production environment. (default 1000)
+  -check-single-keys string
+        Comma separated list of single keys to export value and length/size
+  -check-single-streams string
+        Comma separated list of single streams to export info about streams, groups and consumers
+  -check-streams string
+        Comma separated list of stream-patterns to export info about streams, groups and consumers, searched for with SCAN
+  -config-command string
+        What to use for the CONFIG command (default "CONFIG")
+  -connection-timeout string
+        Timeout for connection to Redis instance (default "15s")
+  -count-keys string
+        Comma separated list of patterns to count (eg: 'db0=production_*,db3=sessions:*'), searched for with SCAN
+  -debug
+        Output verbose debug information
+  -disable-exporting-key-values
+        Whether to disable values of keys stored in redis as labels or not when using check-keys/check-single-key
+  -export-client-list
+        Whether to scrape Client List specific metrics
+  -export-client-port
+        Whether to include the client's port when exporting the client list. Warning: including the port increases the number of metrics generated and will make your Prometheus server take up more memory
+  -include-config-metrics
+        Whether to include all config settings as metrics
+  -include-system-metrics
+        Whether to include system metrics like e.g. redis_total_system_memory_bytes
+  -is-cluster
+        Whether this is a redis cluster (Enable this if you need to fetch key level data on a Redis Cluster).
+  -is-tile38
+        Whether to scrape Tile38 specific metrics
+  -log-format string
+        Log format, valid options are txt and json (default "txt")
+  -max-distinct-key-groups int
+        The maximum number of distinct key groups with the most memory utilization to present as distinct metrics per database, the leftover key groups will be aggregated in the 'overflow' bucket (default 100)
+  -namespace string
+        Namespace for metrics (default "redis")
+  -ping-on-connect
+        Whether to ping the redis instance after connecting
+  -redact-config-metrics
+        Whether to redact config settings that include potentially sensitive information like passwords (default true)
+  -redis-only-metrics
+        Whether to also export go runtime metrics
+  -redis.addr string
+        Address of the Redis instance to scrape (default "redis://localhost:6379")
+  -redis.password string
+        Password of the Redis instance to scrape
+  -redis.password-file string
+        Password file of the Redis instance to scrape
+  -redis.user string
+        User name to use for authentication (Redis ACL for Redis 6.0 and newer)
+  -script string
+        Comma separated list of path(s) to Redis Lua script(s) for gathering extra metrics
+  -set-client-name
+        Whether to set client name to redis_exporter (default true)
+  -skip-tls-verification
+        Whether to to skip TLS verification
+  -tls-ca-cert-file string
+        Name of the CA certificate file (including full path) if the server requires TLS client authentication
+  -tls-client-cert-file string
+        Name of the client certificate file (including full path) if the server requires TLS client authentication
+  -tls-client-key-file string
+        Name of the client key file (including full path) if the server requires TLS client authentication
+  -tls-server-ca-cert-file string
+        Name of the CA certificate file (including full path) if the web interface and telemetry should require TLS client authentication
+  -tls-server-cert-file string
+        Name of the server certificate file (including full path) if the web interface and telemetry should use TLS
+  -tls-server-key-file string
+        Name of the server key file (including full path) if the web interface and telemetry should use TLS
+  -tls-server-min-version string
+        Minimum TLS version that is acceptable by the web interface and telemetry when using TLS (default "TLS1.2")
+  -version
+        Show version information and exit
+  -web.listen-address string
+        Address to listen on for web interface and telemetry. (default ":9121")
+  -web.telemetry-path string
+        Path under which to expose metrics. (default "/metrics")
+#}

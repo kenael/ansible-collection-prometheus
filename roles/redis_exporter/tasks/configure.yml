@@ -1,0 +1,22 @@
+---
+
+- name: create redis_exporter configuration directory
+  ansible.builtin.file:
+    path: "{{ redis_exporter_config_dir }}"
+    state: directory
+    owner: root
+    group: "{{ redis_exporter_system_group }}"
+    mode: 0770
+
+- name: create redis_exporter configuration
+  ansible.builtin.template:
+    src: "config.yml.j2"
+    dest: "{{ redis_exporter_config_dir }}/config.yml"
+    force: true
+    owner: root
+    group: "{{ redis_exporter_system_group }}"
+    mode: 0644
+  notify:
+    - restart redis exporter
+
+...

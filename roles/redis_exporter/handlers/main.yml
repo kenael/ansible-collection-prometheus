@@ -1,0 +1,23 @@
+---
+
+- name: daemon-reload
+  ansible.builtin.systemd:
+    daemon_reload: true
+    force: true
+  notify: restart redis_exporter
+  when:
+    - ansible_service_mgr == 'systemd'
+
+- name: reload redis exporter
+  become: true
+  ansible.builtin.service:
+    name: redis_exporter
+    state: reloaded
+
+- name: restart redis exporter
+  become: true
+  ansible.builtin.service:
+    name: redis_exporter
+    state: restarted
+
+...
