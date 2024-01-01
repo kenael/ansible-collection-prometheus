@@ -5,7 +5,7 @@ name: "exporter: ssl with various configuration"
 on:
   workflow_run:
     workflows:
-      - "ssl_exporter"
+      - "exporter: ssl"
     types:
       - completed
 
