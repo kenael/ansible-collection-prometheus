@@ -5,7 +5,7 @@ name: "exporter: mysql with various configuration"
 on:
   workflow_run:
     workflows:
-      - "mysql_exporter"
+      - "exporter: mysql"
     types:
       - completed
 

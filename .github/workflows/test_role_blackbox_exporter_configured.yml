@@ -5,7 +5,7 @@ name: "exporter: blackbox with various configuration"
 on:
   workflow_run:
     workflows:
-      - "blackbox_exporter"
+      - "exporter: blackbox"
     types:
       - completed
 

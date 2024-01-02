@@ -1,11 +1,11 @@
 ---
 
-name: "exporter: node with various configuration"
+name: pushgateway with various configuration
 
 on:
   workflow_run:
     workflows:
-      - "exporter: node"
+      - "pushgateway"
     types:
       - completed
 
@@ -31,9 +31,8 @@ jobs:
         scenario:
           - configured
           - latest
-          - upgrade
         collection_role:
-          - node_exporter
+          - pushgateway
 
     steps:
       - name: check out the codebase.

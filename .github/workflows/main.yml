@@ -50,18 +50,18 @@ jobs:
         collection_role:
           - alertmanager
           - am_silence
-          - blackbox_exporter
           - docker_sd
+          - promcheck
+          - prometheus
+          - pushgateway
+          - trickster
+          - blackbox_exporter
           - json_exporter
           - mongodb_exporter
           - mysql_exporter
           - nginx_exporter
           - node_exporter
           - node_exporter_textfile_collectors
-          - promcheck
-          - prometheus
-          - pushgateway
-          - trickster
           - redis_exporter
           - ssl_exporter
     steps:

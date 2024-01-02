@@ -5,7 +5,7 @@ name: "exporter: nginx with various configuration"
 on:
   workflow_run:
     workflows:
-      - "nginx_exporter"
+      - "exporter: nginx"
     types:
       - completed
 
