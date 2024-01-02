@@ -1,11 +1,23 @@
 
 # Ansible Role:  `am_silence`
 
-
+Ansible role to create an alertmanager silence.
 
 ## usage
 
-```
+```yaml
+silence_downtime:
+  minutes: 10
+
+silence_alertmanager:
+  url: "http://127.0.0.1:9093"
+
+silence_comment: Silence for ansible-deployment
+
+silence_matchers:
+  - name: "environment"
+    value: "dev"
+    isRegex: false
 ```
 
 ## tests

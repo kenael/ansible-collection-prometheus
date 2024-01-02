@@ -3,6 +3,7 @@
 
 This ansible role installs and configure [Nginx Prometheus Exporter](https://github.com/nginxinc/nginx-prometheus-exporter)
 
+
 ## Usage
 
 Look to the [defaults](defaults/main.yml) properties file to see the possible configuration properties.

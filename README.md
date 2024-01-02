@@ -3,6 +3,15 @@
 A collection of Ansible roles for the Prometheus universe. 
 
 
+[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/bodsch/ansible-collection-prometheus/main.yml?branch=main)][ci]
+[![GitHub issues](https://img.shields.io/github/issues/bodsch/ansible-collection-prometheus)][issues]
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/bodsch/ansible-collection-prometheus)][releases]
+
+[ci]: https://github.com/bodsch/ansible-collection-prometheus/actions
+[issues]: https://github.com/bodsch/ansible-collection-prometheus/issues?q=is%3Aopen+is%3Aissue
+[releases]: https://github.com/bodsch/ansible-collection-prometheus/releases
+
+
 ## supported operating systems
 
 * Arch Linux

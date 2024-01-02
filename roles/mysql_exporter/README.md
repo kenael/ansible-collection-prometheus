@@ -4,17 +4,6 @@
 Ansible role to install and configure [mysqld_exporter](https://github.com/prometheus/mysqld_exporter).
 
 
-[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/bodsch/ansible-mysql-exporter/main.yml?branch=main)][ci]
-[![GitHub issues](https://img.shields.io/github/issues/bodsch/ansible-mysql-exporter)][issues]
-[![GitHub release (latest by date)](https://img.shields.io/github/v/release/bodsch/ansible-mysql-exporter)][releases]
-[![Ansible Quality Score](https://img.shields.io/ansible/quality/50067?label=role%20quality)][quality]
-
-[ci]: https://github.com/bodsch/ansible-mysql-exporter/actions
-[issues]: https://github.com/bodsch/ansible-mysql-exporter/issues?q=is%3Aopen+is%3Aissue
-[releases]: https://github.com/bodsch/ansible-mysql-exporter/releases
-[quality]: https://galaxy.ansible.com/bodsch/mysql_exporter
-
-
 If `latest` is set for `mysql_exporter_version`, the role tries to install the latest release version.  
 **Please use this with caution, as incompatibilities between releases may occur!**
 
