@@ -3,16 +3,6 @@
 
 This ansible role installs and configure [json_exporter](https://github.com/prometheus-community/json_exporter)
 
-[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/bodsch/ansible-json-exporter/main.yml?branch=main)][ci]
-[![GitHub issues](https://img.shields.io/github/issues/bodsch/ansible-json-exporter)][issues]
-[![GitHub release (latest by date)](https://img.shields.io/github/v/release/bodsch/ansible-json-exporter)][releases]
-[![Ansible Quality Score](https://img.shields.io/ansible/quality/50067?label=role%20quality)][quality]
-
-[ci]: https://github.com/bodsch/ansible-json-exporter/actions
-[issues]: https://github.com/bodsch/ansible-json-exporter/issues?q=is%3Aopen+is%3Aissue
-[releases]: https://github.com/bodsch/ansible-json-exporter/releases
-[quality]: https://galaxy.ansible.com/bodsch/json_exporter
-
 
 If `latest` is set for `json_exporter_version`, the role tries to install the latest release version.  
 **Please use this with caution, as incompatibilities between releases may occur!**

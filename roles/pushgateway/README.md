@@ -4,16 +4,6 @@
 Ansible role to setup [pushgateway](https://github.com/prometheus/pushgateway).
 
 
-[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/bodsch/ansible-pushgateway/main.yml?branch=main)][ci]
-[![GitHub issues](https://img.shields.io/github/issues/bodsch/ansible-pushgateway)][issues]
-[![GitHub release (latest by date)](https://img.shields.io/github/v/release/bodsch/ansible-pushgateway)][releases]
-[![Ansible Quality Score](https://img.shields.io/ansible/quality/50067?label=role%20quality)][quality]
-
-[ci]: https://github.com/bodsch/ansible-pushgateway/actions
-[issues]: https://github.com/bodsch/ansible-pushgateway/issues?q=is%3Aopen+is%3Aissue
-[releases]: https://github.com/bodsch/ansible-pushgateway/releases
-[quality]: https://galaxy.ansible.com/bodsch/pushgateway
-
 If `latest` is set for `pushgateway_version`, the role tries to install the latest release version.  
 **Please use this with caution, as incompatibilities between releases may occur!**
 

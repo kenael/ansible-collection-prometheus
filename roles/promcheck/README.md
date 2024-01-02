@@ -3,6 +3,7 @@
 
 Ansible role to install and configure [promcheck](https://github.com/cbrgm/promcheck).
 
+
 If `latest` is set for `prometheus_version`, the role tries to install the latest release version.  
 **Please use this with caution, as incompatibilities between releases may occur!**
 

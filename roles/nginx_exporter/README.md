@@ -3,6 +3,7 @@
 
 This ansible role installs and configure [Nginx Prometheus Exporter](https://github.com/nginxinc/nginx-prometheus-exporter)
 
+
 ## Usage
 
 Look to the [defaults](defaults/main.yml) properties file to see the possible configuration properties.
@@ -18,6 +19,15 @@ Tested on
 * Ubuntu 18.04 / 20.04
 
 
-# Author Information
 
-- Bodo Schulz bodo.schulz@tallence.com
+---
+
+## Author
+
+- Bodo Schulz
+
+## License
+
+This project is licensed under Apache License. See [LICENSE](/LICENSE) for more details.
+
+**FREE SOFTWARE, HELL YEAH!**

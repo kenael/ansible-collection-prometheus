@@ -4,17 +4,6 @@
 Ansible role to install and configure [mongodb_exporter](https://github.com/prometheus/mongodb_exporter).
 
 
-[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/bodsch/ansible-mongodb-exporter/main.yml?branch=main)][ci]
-[![GitHub issues](https://img.shields.io/github/issues/bodsch/ansible-mongodb-exporter)][issues]
-[![GitHub release (latest by date)](https://img.shields.io/github/v/release/bodsch/ansible-mongodb-exporter)][releases]
-[![Ansible Quality Score](https://img.shields.io/ansible/quality/50067?label=role%20quality)][quality]
-
-[ci]: https://github.com/bodsch/ansible-mongodb-exporter/actions
-[issues]: https://github.com/bodsch/ansible-mongodb-exporter/issues?q=is%3Aopen+is%3Aissue
-[releases]: https://github.com/bodsch/ansible-mongodb-exporter/releases
-[quality]: https://galaxy.ansible.com/bodsch/mongodb_exporter
-
-
 If `latest` is set for `mongodb_exporter_version`, the role tries to install the latest release version.  
 **Please use this with caution, as incompatibilities between releases may occur!**
 
