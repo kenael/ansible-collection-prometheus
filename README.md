@@ -6,7 +6,7 @@ Documentation for the collection.
 
 | Role                                                                       | | Description |
 |:---------------------------------------------------------------------------| :---- | :---- |
-| [bodsch.prometheus.alertmanager](./roles/alertmanager/README.md)           |       |       |
+| [bodsch.prometheus.alertmanager](./roles/alertmanager/README.md)           |[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/bodsch/ansible-collection-prometheus/test_role_alertmanager.yml?branch=main)][ci] |       |
 | [bodsch.prometheus.am_silence](./roles/am_silence/README.md)               |       |       |
 | [bodsch.prometheus.blackbox_exporter](./roles/blackbox_exporter/README.md) |       |       |
 | [bodsch.prometheus.docker_sd](./roles/docker_sd/README.md)                 |       |       |
@@ -21,6 +21,10 @@ Documentation for the collection.
 | [bodsch.prometheus.trickster](./roles/trickster/README.md)                 |       |       |
 | [bodsch.prometheus.redis_exporter](./roles/redis_exporter/README.md)       |       |       |
 | [bodsch.prometheus.ssl_exporter](./roles/ssl_exporter/README.md)           |       |       |
+
+
+[ci]: https://github.com/bodsch/ansible-collection-prometheus/actions
+
 
 ## Modules
 
