@@ -1,7 +1,7 @@
 
 # Ansible Role:  `trickster`
 
-[Trickster](https://github.com/tricksterproxy/trickster) ist an Open Source Dashboard Accelerator for Time Series Databases.
+[Trickster](https://github.com/tricksterproxy/trickster) is an Open Source Dashboard Accelerator for Time Series Databases.
 
 This ansible role installs and configure Trickster.
 

@@ -18,6 +18,15 @@ Tested on
 * Ubuntu 18.04 / 20.04
 
 
-# Author Information
 
-- Bodo Schulz bodo.schulz@tallence.com
+---
+
+## Author
+
+- Bodo Schulz
+
+## License
+
+This project is licensed under Apache License. See [LICENSE](/LICENSE) for more details.
+
+**FREE SOFTWARE, HELL YEAH!**
