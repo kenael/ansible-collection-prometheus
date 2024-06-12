@@ -3,7 +3,7 @@
 namespace: bodsch
 name: prometheus
 
-version: 1.0.0
+version: 1.5.1
 
 readme: README.md
 
@@ -26,10 +26,10 @@ dependencies:
   bodsch.core: ">=1.1.2"
   bodsch.scm: "*"
 
-repository: https://github.com/bodsch/ansible-collection-prometheus
-documentation: https://github.com/bodsch/ansible-collection-prometheus/README.md
-homepage: https://github.com/bodsch/ansible-collection-prometheus
-issues: https://github.com/bodsch/ansible-collection-prometheus/issues
+repository: https://github.com/kenael/ansible-collection-prometheus
+documentation: https://github.com/kenael/ansible-collection-prometheus/README.md
+homepage: https://github.com/kenael/ansible-collection-prometheus
+issues: https://github.com/kenael/ansible-collection-prometheus/issues
 
 build_ignore:
   - "galaxy.yml"
