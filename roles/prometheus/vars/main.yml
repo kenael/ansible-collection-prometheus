@@ -142,7 +142,7 @@ prometheus_defaults_alert_rules: []
 
 prometheus_defaults_scrape_configs: []
 
-prometheus_defaults_remote_write: {}
+prometheus_defaults_remote_write: []
 
 prometheus_defaults_remote_read: {}
 
