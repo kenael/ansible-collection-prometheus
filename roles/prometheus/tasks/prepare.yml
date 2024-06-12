@@ -32,7 +32,7 @@
     prometheus_service: "{{ prometheus_defaults_service | combine(prometheus_service, recursive=True) }}"
     prometheus_global: "{{ prometheus_defaults_global | combine(prometheus_global, recursive=True) }}"
     prometheus_alerting: "{{ prometheus_defaults_alerting | combine(prometheus_alerting, recursive=True) }}"
-    prometheus_remote_write: "{{ prometheus_defaults_remote_write | union(prometheus_remote_write, recursive=True) }}"
+    prometheus_remote_write: "{{ prometheus_defaults_remote_write | union(prometheus_remote_write) }}"
     prometheus_remote_read: "{{ prometheus_defaults_remote_read | combine(prometheus_remote_read, recursive=True) }}"
     prometheus_storage: "{{ prometheus_defaults_storage | combine(prometheus_storage, recursive=True) }}"
     prometheus_tracing: "{{ prometheus_defaults_tracing | combine(prometheus_tracing, recursive=True) }}"
