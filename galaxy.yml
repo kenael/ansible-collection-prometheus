@@ -1,6 +1,6 @@
 ---
 
-namespace: bodsch
+namespace: kenael
 name: prometheus
 
 version: 1.5.1
@@ -9,6 +9,7 @@ readme: README.md
 
 authors:
   - Bodo Schulz <bodo@boone-schulz.de>
+  - Andreas Martin <andreas.martin@gmx.net>
 
 description: A collection of Ansible roles for the Prometheus universe.
 
